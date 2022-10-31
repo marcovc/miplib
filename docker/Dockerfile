@@ -11,7 +11,7 @@
 ARG SCIP_VERSION=7.0.3
 ARG IPOPT_VERSION=3.14.4
 
-FROM ubuntu:latest as COMPILE
+FROM ubuntu:focal as COMPILE
 
 ARG SCIP_VERSION
 ARG IPOPT_VERSION
@@ -60,7 +60,7 @@ RUN wget https://scip.zib.de/download/release/scipoptsuite-${SCIP_VERSION}.tgz -
 
 # Runtime image
 
-FROM ubuntu:latest
+FROM ubuntu:focal
 
 ENV DEBIAN_FRONTEND=noninteractive
 
