@@ -592,7 +592,9 @@ std::string GurobiSolver::backend_info()
 bool GurobiSolver::is_available()
 {
   try {
-    GRBEnv(false);
+    GRBEnv env(true);
+    env.set(GRB_IntParam_OutputFlag, 0);
+    env.start();
   }
   catch (GRBException const& e)
   {
