@@ -11,7 +11,8 @@
 ARG SCIP_VERSION=7.0.3
 ARG IPOPT_VERSION=3.14.4
 
-FROM ubuntu:focal as COMPILE
+#FROM ubuntu:focal as COMPILE
+FROM debian:bullseye-slim as COMPILE
 
 ARG SCIP_VERSION
 ARG IPOPT_VERSION
@@ -20,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends g++ gfortran make cmake ca-certificates wget   \
-  pkg-config libblas3 libgfortran4 libgsl23 libgslcblas0 liblapack3 libtbb2 libboost-program-options1.71 \
+  pkg-config libblas3 libgfortran5 libgsl-dev libgslcblas0 liblapack3 libtbb2 libboost-program-options1.71 \
     build-essential libgmp-dev libblas-dev libbliss-dev zlib1g-dev libgsl-dev libcliquer-dev \
     libreadline-dev liblapack-dev git file \
   && rm -rf /var/lib/apt/lists/*
@@ -54,19 +55,19 @@ RUN wget https://scip.zib.de/download/release/scipoptsuite-${SCIP_VERSION}.tgz -
   && cd scipoptsuite-${SCIP_VERSION} \
   && mkdir build \
   && cd build \
-  && cmake -DZIMPL=off .. \
+  && cmake -DZIMPL=off -DPAPILO=off .. \
   && make CXX_FLAGS="-DSOPLEX_WITH_GMP -fPIC" install \
   && cd $WORKDIR
 
 # Runtime image
 
-FROM ubuntu:focal
+FROM debian:bullseye-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    wget libblas3 libgfortran4 libgsl23 libgslcblas0 liblapack3 libtbb2 libboost-program-options1.71 lp-solve \
+    wget libblas3 libgfortran5 libgsl-dev libgslcblas0 liblapack3 libtbb2 libboost-program-options1.71 lp-solve \
     build-essential cmake g++-9 libgmp-dev libblas-dev libbliss-dev zlib1g-dev libgsl-dev libcliquer-dev \
     libreadline-dev git ca-certificates ssh liblpsolve55-dev libgomp1 \
   && rm -rf /var/lib/apt/lists/*
