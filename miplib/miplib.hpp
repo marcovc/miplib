@@ -9,4 +9,5 @@
 #include <miplib/var.hpp>
 #include <miplib/expr.hpp>
 #include <miplib/constr.hpp>
+#include <miplib/settings.hpp>
 #include <core/util.hpp>

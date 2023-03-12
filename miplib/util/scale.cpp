@@ -1,6 +1,7 @@
 #include "scale.hpp"
 #include <miplib/constr.hpp>
 #include <miplib/solver.hpp>
+#include <miplib/settings.hpp>
 
 #include <spdlog/spdlog.h>
 #include <fmt/ostream.h>
@@ -93,7 +94,7 @@ Constr scale_gm(Constr const& constr, double skip_lb, double skip_ub, bool ignor
 
   double amplitude = maxmaxabs / minmaxabs;
 
-  if (!ignore_inf_var_bounds and amplitude >= 1e8)
+  if (!ignore_inf_var_bounds and amplitude >= 1e8 and Settings::warn_about_scaling_issues)
     spdlog::warn(
       "Constraint terms differ more than 1e8 times - expect numerical issues!:\n"
       "| {0} | ∈ [{1}, {2}]",

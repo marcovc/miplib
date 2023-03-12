@@ -14,6 +14,7 @@ set(SOURCE_FILES
   constr.cpp
   solver.cpp
   capi.cpp
+  settings.cpp
 )
 
 # Optional dependency: Gurobi.
