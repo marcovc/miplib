@@ -29,6 +29,8 @@ find_library(GUROBI_C_LIBRARY
   libgurobi95.so
   gurobi91
   libgurobi91.so
+  gurobi100
+  libgurobi100.so
   PATHS "${GUROBI}/lib"
 )
 
