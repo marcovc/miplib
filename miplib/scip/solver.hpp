@@ -91,6 +91,8 @@ struct ScipSolver : detail::ISolver
 
   void set_time_limit(double secs);
 
+  void set_gap_time_limit(double secs, double max_rel_gap);
+
   bool is_in_callback() const;
 
   void set_warm_start(PartialSolution const& partial_solution);

@@ -466,6 +466,29 @@ void GurobiSolver::set_time_limit(double secs)
   model.set(GRB_DoubleParam_TimeLimit, secs);
 }
 
+void GurobiSolver::set_gap_time_limit(double secs, double max_rel_gap)
+{
+  if (!p_callback)
+  {
+    model.set(GRB_IntParam_LazyConstraints, 1); // not sure if this is needed
+    p_callback = std::make_unique<detail::GurobiCurrentStateHandle>();
+    model.setCallback(p_callback.get());
+  }
+  p_callback->add_stopper([max_rel_gap, secs, this]() {
+    auto runtime = p_callback->runtime();
+    if (!runtime)
+      return false;
+    if (*runtime <= secs)
+      return false;
+    
+    auto cur_rel_gap = p_callback->gap();
+    if (!cur_rel_gap)
+      return false;
+
+    return *cur_rel_gap <= max_rel_gap;
+  });
+}
+
 bool GurobiSolver::is_in_callback() const
 {
   return p_callback and p_callback->is_active();
@@ -504,6 +527,11 @@ void GurobiCurrentStateHandle::add_constr_handler(LazyConstrHandler const& const
     m_integral_only_constr_hdlrs.push_back(constr_hdlr);
   else
     m_constr_hdlrs.push_back(constr_hdlr);
+}
+
+void GurobiCurrentStateHandle::add_stopper(GurobiStopper const& stopper)
+{
+  m_stoppers.push_back(stopper);
 }
 
 double GurobiCurrentStateHandle::value(IVar const& var) const
@@ -557,6 +585,13 @@ void GurobiCurrentStateHandle::callback()
       for (auto& h: m_integral_only_constr_hdlrs)
         h.add();
     }
+
+    for (auto const& s : m_stoppers)
+      if (s())
+      {
+        GRBCallback::abort();
+        break;
+      }
   }
   catch (...)
   {
@@ -565,6 +600,22 @@ void GurobiCurrentStateHandle::callback()
   }
   m_active = false;
 }
+
+std::optional<double> GurobiCurrentStateHandle::runtime() const 
+{ 
+  if (where == GRB_CB_POLLING)
+    return std::nullopt;
+  return const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_RUNTIME); 
+} 
+
+std::optional<double> GurobiCurrentStateHandle::gap() const
+{ 
+  if (where != GRB_CB_MIP)
+    return std::nullopt;
+  auto bound = const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_MIP_OBJBND); 
+  auto best =  const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_MIP_OBJBST); 
+  return std::abs(bound - best)/std::abs(best);
+} 
 
 } // namespace detail
 

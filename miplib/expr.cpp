@@ -684,6 +684,9 @@ static double interval_prod_ub(
 
 double Expr::lb() const
 {
+  if (is_constant())
+    return value();
+    
   double infinity = solver().infinity();
 
   double r = constant();

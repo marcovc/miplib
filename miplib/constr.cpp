@@ -147,6 +147,11 @@ Constr Constr::scale(double skip_lb, double skip_ub, bool ignore_inf_var_bounds)
   return detail::scale_gm(*this, skip_lb, skip_ub, ignore_inf_var_bounds);
 }
 
+Constr Constr::with_name(std::string const& name) const
+{
+  return Constr(expr().solver(), type(), expr(), name);
+}
+
 /**
  *  Indicator constraints
  **/

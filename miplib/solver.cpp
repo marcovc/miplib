@@ -226,6 +226,12 @@ void Solver::set_time_limit(double secs)
   p_impl->set_time_limit(secs);
 }
 
+// Stop if after secs, the relative gap is less or equal than max_rel_gap
+void Solver::set_gap_time_limit(double secs, double max_rel_gap)
+{
+  p_impl->set_gap_time_limit(secs, max_rel_gap);
+}
+
 bool Solver::backend_is_compiled(Backend const& backend)
 {
   switch (backend)

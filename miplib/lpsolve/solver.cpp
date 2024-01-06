@@ -259,6 +259,11 @@ void LpsolveSolver::set_time_limit(double secs)
   set_timeout(p_lprec, (long) std::ceil(secs));
 }
 
+void LpsolveSolver::set_gap_time_limit(double /*secs*/, double /*max_rel_gap*/)
+{
+  throw std::logic_error("set_gap_time_limit is not implemented for LPsolve yet.");
+}
+
 void LpsolveSolver::dump(std::string const& filename) const
 {
   std::string ext = filename.substr(filename.size()-3);

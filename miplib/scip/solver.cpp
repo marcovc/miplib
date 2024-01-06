@@ -470,6 +470,11 @@ void ScipSolver::set_time_limit(double secs)
   SCIP_CALL_EXC(SCIPsetRealParam(p_env, "limits/time", secs));
 }
 
+void ScipSolver::set_gap_time_limit(double secs, double max_rel_gap)
+{
+  throw std::logic_error("set_gap_time_limit is not implemented for SCIP yet.");
+}
+
 void ScipSolver::dump(std::string const& filename) const
 {
   SCIP_CALL_EXC(SCIPwriteOrigProblem(p_env, filename.c_str(), NULL, false));	

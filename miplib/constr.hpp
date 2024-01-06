@@ -46,6 +46,8 @@ struct Constr
     bool ignore_inf_var_bounds = false
   ) const;
   
+  Constr with_name(std::string const& name) const;
+
   private:
   std::shared_ptr<detail::IConstr> p_impl;
   friend std::ostream& operator<<(std::ostream& os, Constr const& c);

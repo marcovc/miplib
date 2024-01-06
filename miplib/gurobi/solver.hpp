@@ -7,19 +7,29 @@
 namespace miplib {
 
 namespace detail {
+
+struct GurobiCurrentStateHandle;
+using GurobiStopper = std::function<bool()>;
+
 struct GurobiCurrentStateHandle : GRBCallback, ICurrentStateHandle
 {
   GurobiCurrentStateHandle();
   void add_constr_handler(LazyConstrHandler const& constr_hdlr, bool integral_only);
+  void add_stopper(GurobiStopper const& stopper);
 
   double value(IVar const& var) const;
   void add_lazy(Constr const& constr);
   void callback();
   bool is_active() const { return m_active; }
+  std::optional<double> runtime() const;  // optional since not every callback invocation allows to query this property
+  std::optional<double> gap() const; // optional since not every callback invocation allows to query this property
+
   // constraint handlers that can run on integral or non-integral nodes
   std::vector<LazyConstrHandler> m_constr_hdlrs;
   // constraint handlers that can run on integral nodes exclusively
   std::vector<LazyConstrHandler> m_integral_only_constr_hdlrs;
+  // stoppers
+  std::vector<GurobiStopper> m_stoppers;
   bool m_active;
 };
 }
@@ -80,6 +90,8 @@ struct GurobiSolver : detail::ISolver
   double infinity() const;
 
   void set_time_limit(double secs);
+
+  void set_gap_time_limit(double secs, double max_rel_gap);
 
   void dump(std::string const& filename) const;
 

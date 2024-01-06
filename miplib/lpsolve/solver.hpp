@@ -65,6 +65,7 @@ struct LpsolveSolver : detail::ISolver
   double infinity() const;
 
   void set_time_limit(double secs);
+  void set_gap_time_limit(double secs, double max_rel_gap);
 
   void dump(std::string const& filename) const;
 
