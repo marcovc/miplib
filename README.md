@@ -20,7 +20,7 @@ The library requires at least one of these backends to be installed.
 ```c++
 using namespace miplib;
 
-Solver solver(Solver::Backend::Scip);
+Solver solver(Solver::BackendRequest::Scip);
 solver.set_verbose(true);
 
 Var v1(solver, Var::Type::Binary, "v1");

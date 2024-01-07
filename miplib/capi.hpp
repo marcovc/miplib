@@ -5,7 +5,7 @@
 
 extern "C" {
 
-enum miplib_SolverBackend {
+enum miplib_SolverBackendRequest {
   Gurobi = 0, Scip = 1, Lpsolve = 2, BestAtCompileTime = 3, BestAtRunTime = 4
 };
 
@@ -14,7 +14,7 @@ enum class miplib_VarType {
 };
 
 char const* miplib_get_last_error();
-int miplib_create_solver(miplib::Solver** rp_solver, miplib_SolverBackend backend);
+int miplib_create_solver(miplib::Solver** rp_solver, miplib_SolverBackendRequest backend_request);
 int miplib_destroy_solver(miplib::Solver* p_solver);
 int miplib_shallow_copy_solver(miplib::Solver** rp_solver, miplib::Solver* p_solver);
 

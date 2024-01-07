@@ -17,7 +17,8 @@ struct ISolver;
 
 struct Solver
 {
-  enum class Backend { Gurobi, Scip, Lpsolve, BestAtCompileTime, BestAtRunTime };
+  enum class BackendRequest { Gurobi, Scip, Lpsolve, BestAtCompileTime, BestAtRunTime };
+  enum class Backend { Gurobi, Scip, Lpsolve };
   enum class NonConvexPolicy { Error, Linearize, Branch };
   enum class IndicatorConstraintPolicy { PassThrough, Reformulate, ReformulateIfUnsupported };
   enum class Sense { Maximize, Minimize };
@@ -31,7 +32,7 @@ struct Solver
     Other
   };
 
-  Solver(Backend backend, bool verbose=true);
+  Solver(BackendRequest backend_request, bool verbose=true);
 
   Backend const& backend() const
   {
@@ -83,6 +84,7 @@ struct Solver
   // (a backend that is compiled may not be available
   // due e.g. to expired license file)
   static bool backend_is_available(Backend const&);
+  static bool backend_is_available(BackendRequest const& backend_request);
 
   double infinity() const;
 
@@ -107,7 +109,7 @@ struct Solver
 
   private:
   std::shared_ptr<detail::ISolver> p_impl;
-  const Backend m_backend;
+  Backend m_backend;
   bool m_constraint_autoscale;
   friend struct Var;
   friend struct Constr;
@@ -194,6 +196,6 @@ struct ISolver
 
 }  // namespace detail
 
-std::ostream& operator<<(std::ostream& os, Solver::Backend const& solver_backend);
+std::ostream& operator<<(std::ostream& os, Solver::BackendRequest const& solver_backend_request);
 
 }  // namespace miplib

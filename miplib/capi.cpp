@@ -28,20 +28,20 @@ int execute(Func const& f)
 #define BEGIN auto const& f = [&]() {
 #define END }; return execute(f);
 
-Solver::Backend convert_backend(miplib_SolverBackend backend)
+Solver::BackendRequest convert_backend_request(miplib_SolverBackendRequest backend_request)
 {
-  switch (backend)
+  switch (backend_request)
   {
-    case miplib_SolverBackend::Gurobi:
-      return Solver::Backend::Gurobi;
-    case miplib_SolverBackend::Scip:
-      return Solver::Backend::Scip;
-    case miplib_SolverBackend::Lpsolve:
-      return Solver::Backend::Lpsolve;
-    case miplib_SolverBackend::BestAtCompileTime:
-      return Solver::Backend::BestAtCompileTime;
-    case miplib_SolverBackend::BestAtRunTime:
-      return Solver::Backend::BestAtRunTime;
+    case miplib_SolverBackendRequest::Gurobi:
+      return Solver::BackendRequest::Gurobi;
+    case miplib_SolverBackendRequest::Scip:
+      return Solver::BackendRequest::Scip;
+    case miplib_SolverBackendRequest::Lpsolve:
+      return Solver::BackendRequest::Lpsolve;
+    case miplib_SolverBackendRequest::BestAtCompileTime:
+      return Solver::BackendRequest::BestAtCompileTime;
+    case miplib_SolverBackendRequest::BestAtRunTime:
+      return Solver::BackendRequest::BestAtRunTime;
   }
   throw std::logic_error("Unsupported backend.");
 }
@@ -67,10 +67,10 @@ char const* miplib_get_last_error()
   return last_error.c_str();
 }
 
-int miplib_create_solver(Solver** rp_solver, miplib_SolverBackend backend)
+int miplib_create_solver(Solver** rp_solver, miplib_SolverBackendRequest backend_request)
 {
   BEGIN
-  *rp_solver = new Solver(convert_backend(backend));
+  *rp_solver = new Solver(convert_backend_request(backend_request));
   END
 }
 

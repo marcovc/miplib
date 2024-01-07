@@ -10,21 +10,21 @@
 
 TEMPLATE_TEST_CASE_SIG(
   "Solver (maximize/minimize)", "[miplib]",
-  ((miplib::Solver::Backend Backend), Backend),
-  miplib::Solver::Backend::Gurobi,
-  miplib::Solver::Backend::Scip,
-  miplib::Solver::Backend::Lpsolve
+  ((miplib::Solver::BackendRequest BackendRequest), BackendRequest),
+  miplib::Solver::BackendRequest::Gurobi,
+  miplib::Solver::BackendRequest::Scip,
+  miplib::Solver::BackendRequest::Lpsolve
 )
 {
   using namespace miplib;
 
-  if (!Solver::backend_is_available(Backend))
+  if (!Solver::backend_is_available(BackendRequest))
   {
-    WARN(fmt::format("Skipped since {} is not available.", Backend));
+    WARN(fmt::format("Skipped since {} is not available.", BackendRequest));
     return;
   }
 
-  Solver solver(Backend, false);
+  Solver solver(BackendRequest, false);
 
   Var v1(solver, Var::Type::Integer, 1, 3, "v1");
   Var v2(solver, Var::Type::Integer, 1, 3, "v2");
@@ -68,21 +68,21 @@ TEMPLATE_TEST_CASE_SIG(
 
 TEMPLATE_TEST_CASE_SIG(
   "Indicator constraint automatic reformulation", "[miplib]",
-  ((miplib::Solver::Backend Backend), Backend),
-  miplib::Solver::Backend::Gurobi,
-  miplib::Solver::Backend::Scip,
-  miplib::Solver::Backend::Lpsolve
+  ((miplib::Solver::BackendRequest BackendRequest), BackendRequest),
+  miplib::Solver::BackendRequest::Gurobi,
+  miplib::Solver::BackendRequest::Scip,
+  miplib::Solver::BackendRequest::Lpsolve
 )
 {
   using namespace miplib;
 
-  if (!Solver::backend_is_available(Backend))
+  if (!Solver::backend_is_available(BackendRequest))
   {
-    WARN(fmt::format("Skipped since {} is not available.", Backend));
+    WARN(fmt::format("Skipped since {} is not available.", BackendRequest));
     return;
   }
 
-  Solver solver(Backend);
+  Solver solver(BackendRequest);
 
   // Disable automatic reformulation
   solver.set_indicator_constraint_policy(Solver::IndicatorConstraintPolicy::PassThrough);
@@ -137,7 +137,7 @@ TEMPLATE_TEST_CASE_SIG(
     Var z1(solver, Var::Type::Binary, "z1");
     Var z2(solver, Var::Type::Binary, "z2");
     // lp solve doesn't support quadratic constraints.
-    if (Backend != miplib::Solver::Backend::Lpsolve)
+    if (BackendRequest != miplib::Solver::BackendRequest::Lpsolve)
       REQUIRE_NOTHROW(solver.add((z1 == 0) >> (z2 * z1 >= 1)));
   }
 
@@ -146,7 +146,7 @@ TEMPLATE_TEST_CASE_SIG(
     Var z1(solver, Var::Type::Binary, "z1");
     Var z2(solver, Var::Type::Binary, "z2");
     // lp solve doesn't support quadratic constraints.
-    if (Backend != miplib::Solver::Backend::Lpsolve)
+    if (BackendRequest != miplib::Solver::BackendRequest::Lpsolve)
       REQUIRE_NOTHROW(solver.add((z1 * z2 == 0) >> (z2 >= 1)));
   }
 }
@@ -154,17 +154,17 @@ TEMPLATE_TEST_CASE_SIG(
 
 TEMPLATE_TEST_CASE_SIG(
   "Lazy constraints", "[miplib]",
-  ((miplib::Solver::Backend Backend), Backend),
-  miplib::Solver::Backend::Gurobi,
-  miplib::Solver::Backend::Scip//,
+  ((miplib::Solver::BackendRequest BackendRequest), BackendRequest),
+  miplib::Solver::BackendRequest::Gurobi,
+  miplib::Solver::BackendRequest::Scip//,
   //miplib::Solver::Backend::Lpsolve
 )
 {
   using namespace miplib;
 
-  if (!Solver::backend_is_available(Backend))
+  if (!Solver::backend_is_available(BackendRequest))
   {
-    WARN(fmt::format("Skipped since {} is not available.", Backend));
+    WARN(fmt::format("Skipped since {} is not available.", BackendRequest));
     return;
   }
 
@@ -197,7 +197,7 @@ TEMPLATE_TEST_CASE_SIG(
 
   SECTION("Test lazy constraint 1")
   {
-    Solver solver(Backend, false);
+    Solver solver(BackendRequest, false);
 
     Var v1(solver, Var::Type::Integer, 0, 1, "v1");
     Var v2(solver, Var::Type::Integer, 0, 1, "v2");
@@ -212,7 +212,7 @@ TEMPLATE_TEST_CASE_SIG(
 
   SECTION("Test lazy constraint 2")
   {
-    Solver solver(Backend, false);
+    Solver solver(BackendRequest, false);
 
     Var v1(solver, Var::Type::Integer, 0, 1, "v1");
     Var v2(solver, Var::Type::Integer, 0, 1, "v2");
@@ -228,20 +228,20 @@ TEMPLATE_TEST_CASE_SIG(
 
 TEMPLATE_TEST_CASE_SIG(
   "Solver remove constraints", "[miplib]",
-  ((miplib::Solver::Backend Backend), Backend),
-  miplib::Solver::Backend::Gurobi,
-  miplib::Solver::Backend::Scip
+  ((miplib::Solver::BackendRequest BackendRequest), BackendRequest),
+  miplib::Solver::BackendRequest::Gurobi,
+  miplib::Solver::BackendRequest::Scip
 )
 {
   using namespace miplib;
 
-  if (!Solver::backend_is_available(Backend))
+  if (!Solver::backend_is_available(BackendRequest))
   {
-    WARN(fmt::format("Skipped since {} is not available.", Backend));
+    WARN(fmt::format("Skipped since {} is not available.", BackendRequest));
     return;
   }
 
-  Solver solver(Backend, false);
+  Solver solver(BackendRequest, false);
 
   Var v1(solver, Var::Type::Integer, 1, 2, "v1");
   Var v2(solver, Var::Type::Integer, 1, 2, "v2");

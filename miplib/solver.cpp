@@ -14,49 +14,56 @@
 
 namespace miplib {
 
-Solver::Solver(Backend backend, bool verbose): m_backend(backend), m_constraint_autoscale(false)
+Solver::Solver(Solver::BackendRequest backend_request, bool verbose): m_backend(Solver::Backend::Gurobi), m_constraint_autoscale(false)
 {
-  switch (backend)
+  switch (backend_request)
   {
-    case  Solver::Backend::Gurobi:
+    case  Solver::BackendRequest::Gurobi:
       #ifdef WITH_GUROBI
       p_impl = std::make_shared<GurobiSolver>(verbose);
+      m_backend = Solver::Backend::Gurobi; 
       return;
       #else
       throw std::logic_error("Request for Gurobi backend but it was not compiled.");
       #endif
-    case Solver::Backend::Scip:
+    case Solver::BackendRequest::Scip:
       #ifdef WITH_SCIP
       p_impl = std::make_shared<ScipSolver>(verbose);
+      m_backend = Solver::Backend::Scip; 
       return;
       #else
       throw std::logic_error("Request for SCIP backend but it was not compiled.");
       #endif
-    case Solver::Backend::Lpsolve:
+    case Solver::BackendRequest::Lpsolve:
       #ifdef WITH_LPSOLVE
       p_impl = std::make_shared<LpsolveSolver>(verbose);
+      m_backend = Solver::Backend::Lpsolve;       
       return;
       #else
       throw std::logic_error("Request for Lpsolve backend but it was not compiled.");
       #endif
-    case Solver::Backend::BestAtCompileTime:
+    case Solver::BackendRequest::BestAtCompileTime:
       #if defined(WITH_GUROBI)
       p_impl = std::make_shared<GurobiSolver>(verbose);
+      m_backend = Solver::Backend::Gurobi; 
       return;
       #elif defined(WITH_SCIP)
       p_impl = std::make_shared<ScipSolver>(verbose);
+      m_backend = Solver::Backend::Scip; 
       return;
       #elif defined(WITH_LPSOLVE)
       p_impl = std::make_shared<LpsolveSolver>(verbose);
+      m_backend = Solver::Backend::Lpsolve; 
       return;
       #else
       throw std::logic_error("No MIP backends were compiled.");
       #endif
-    case Solver::Backend::BestAtRunTime:
+    case Solver::BackendRequest::BestAtRunTime:
       #if defined(WITH_GUROBI)
       if (backend_is_available(Solver::Backend::Gurobi))
       {
         p_impl = std::make_shared<GurobiSolver>(verbose);
+        m_backend = Solver::Backend::Gurobi; 
         return;  
       }
       #endif
@@ -64,6 +71,7 @@ Solver::Solver(Backend backend, bool verbose): m_backend(backend), m_constraint_
       if (backend_is_available(Solver::Backend::Scip))
       {
         p_impl = std::make_shared<ScipSolver>(verbose);
+        m_backend = Solver::Backend::Scip; 
         return;  
       }
       #endif
@@ -71,6 +79,7 @@ Solver::Solver(Backend backend, bool verbose): m_backend(backend), m_constraint_
       if (backend_is_available(Solver::Backend::Lpsolve))
       {
         p_impl = std::make_shared<LpsolveSolver>(verbose);
+        m_backend = Solver::Backend::Lpsolve; 
         return;  
       }
       #endif
@@ -288,6 +297,19 @@ bool Solver::backend_is_available(Backend const& backend)
   }
 }
 
+bool Solver::backend_is_available(BackendRequest const& backend_request)
+{
+  if (backend_request == BackendRequest::Gurobi)
+    return backend_is_available(Backend::Gurobi);
+  else  
+  if (backend_request == BackendRequest::Scip)
+    return backend_is_available(Backend::Scip);
+  else
+  if (backend_request == BackendRequest::Lpsolve)
+    return backend_is_available(Backend::Lpsolve);
+  return backend_is_available(Backend::Gurobi) or backend_is_available(Backend::Scip) or backend_is_available(Backend::Lpsolve); 
+}
+
 void Solver::dump(std::string const& filename) const
 {
   p_impl->dump(filename);
@@ -334,23 +356,23 @@ void ISolver::set_indicator_constraint_policy(Solver::IndicatorConstraintPolicy 
 
 }
 
-std::ostream& operator<<(std::ostream& os, Solver::Backend const& solver_backend)
+std::ostream& operator<<(std::ostream& os, Solver::BackendRequest const& solver_backend_request)
 {
-  switch (solver_backend)
+  switch (solver_backend_request)
   {
-    case Solver::Backend::Scip:
+    case Solver::BackendRequest::Scip:
       os << "Scip";
       break;
-    case Solver::Backend::Gurobi:
+    case Solver::BackendRequest::Gurobi:
       os << "Gurobi";
       break;
-    case Solver::Backend::Lpsolve:
+    case Solver::BackendRequest::Lpsolve:
       os << "Lpsolve";
       break;
-    case Solver::Backend::BestAtCompileTime:
+    case Solver::BackendRequest::BestAtCompileTime:
       os << "BestAtCompileTime";
       break;
-    case Solver::Backend::BestAtRunTime:
+    case Solver::BackendRequest::BestAtRunTime:
       os << "BestAtRunTime";
       break;
   }
