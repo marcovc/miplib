@@ -241,6 +241,16 @@ void Solver::set_gap_time_limit(double secs, double max_rel_gap)
   p_impl->set_gap_time_limit(secs, max_rel_gap);
 }
 
+void Solver::set_max_nr_solutions(std::size_t max_nr_solutions)
+{
+  p_impl->set_max_nr_solutions(max_nr_solutions);
+}
+
+void Solver::set_stopper(std::function<bool()> const& stopper)
+{
+  p_impl->set_stopper(stopper);
+}
+
 bool Solver::backend_is_compiled(Backend const& backend)
 {
   switch (backend)

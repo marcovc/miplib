@@ -489,6 +489,22 @@ void GurobiSolver::set_gap_time_limit(double secs, double max_rel_gap)
   });
 }
 
+void GurobiSolver::set_max_nr_solutions(std::size_t max_nr_solutions)
+{
+  model.set(GRB_IntParam_SolutionLimit, max_nr_solutions);
+}
+
+void GurobiSolver::set_stopper(std::function<bool()> const& stopper)
+{
+  if (!p_callback)
+  {
+    model.set(GRB_IntParam_LazyConstraints, 1); // not sure if this is needed
+    p_callback = std::make_unique<detail::GurobiCurrentStateHandle>();
+    model.setCallback(p_callback.get());
+  }
+  p_callback->add_stopper(stopper);
+}
+
 bool GurobiSolver::is_in_callback() const
 {
   return p_callback and p_callback->is_active();

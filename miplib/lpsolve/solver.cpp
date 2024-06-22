@@ -264,6 +264,16 @@ void LpsolveSolver::set_gap_time_limit(double /*secs*/, double /*max_rel_gap*/)
   throw std::logic_error("set_gap_time_limit is not implemented for LPsolve yet.");
 }
 
+void LpsolveSolver::set_max_nr_solutions(std::size_t)
+{
+  throw std::logic_error("set_gap_time_limit is not implemented for LPsolve yet.");
+}
+
+void LpsolveSolver::set_stopper(std::function<bool()> const&)
+{
+  throw std::logic_error("set_stopper is not implemented for LPsolve yet.");
+}
+
 void LpsolveSolver::dump(std::string const& filename) const
 {
   std::string ext = filename.substr(filename.size()-3);

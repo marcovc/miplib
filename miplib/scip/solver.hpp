@@ -93,6 +93,10 @@ struct ScipSolver : detail::ISolver
 
   void set_gap_time_limit(double secs, double max_rel_gap);
 
+  void set_max_nr_solutions(std::size_t);
+
+  void set_stopper(std::function<bool()> const& stopper);
+
   bool is_in_callback() const;
 
   void set_warm_start(PartialSolution const& partial_solution);

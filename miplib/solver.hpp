@@ -95,6 +95,10 @@ struct Solver
   // Stop if after secs, the relative gap is less or equal than max_rel_gap
   void set_gap_time_limit(double secs, double max_rel_gap);
 
+  void set_max_nr_solutions(std::size_t);
+
+  void set_stopper(std::function<bool()> const&);
+
   // Used to build initial feasible solution.
   void set_warm_start(PartialSolution const& partial_solution);
 
@@ -182,6 +186,10 @@ struct ISolver
   virtual void set_time_limit(double secs) = 0;
 
   virtual void set_gap_time_limit(double secs, double max_rel_gap) = 0;
+
+  virtual void set_max_nr_solutions(std::size_t) = 0;
+
+  virtual void set_stopper(std::function<bool()> const&) = 0;
 
   virtual void dump(std::string const& filename) const = 0;
 

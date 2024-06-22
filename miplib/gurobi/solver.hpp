@@ -74,7 +74,7 @@ struct GurobiSolver : detail::ISolver
   void set_feasibility_tolerance(double value);
   void set_epsilon(double value);
   void set_nr_threads(std::size_t);
-
+  
   double get_int_feasibility_tolerance() const;
   double get_feasibility_tolerance() const;
   double get_epsilon() const;
@@ -92,6 +92,8 @@ struct GurobiSolver : detail::ISolver
   void set_time_limit(double secs);
 
   void set_gap_time_limit(double secs, double max_rel_gap);
+  void set_max_nr_solutions(std::size_t);
+  void set_stopper(std::function<bool()> const& stopper);
 
   void dump(std::string const& filename) const;
 

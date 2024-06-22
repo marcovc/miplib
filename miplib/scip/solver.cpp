@@ -475,6 +475,16 @@ void ScipSolver::set_gap_time_limit(double secs, double max_rel_gap)
   throw std::logic_error("set_gap_time_limit is not implemented for SCIP yet.");
 }
 
+void ScipSolver::set_max_nr_solutions(std::size_t)
+{
+  throw std::logic_error("set_max_nr_solutions is not implemented for SCIP yet.");
+}
+
+void ScipSolver::set_stopper(std::function<bool()> const& /*stopper*/)
+{
+  throw std::logic_error("set_stopper is not implemented for SCIP yet.");
+}
+
 void ScipSolver::dump(std::string const& filename) const
 {
   SCIP_CALL_EXC(SCIPwriteOrigProblem(p_env, filename.c_str(), NULL, false));	
