@@ -108,6 +108,8 @@ struct GurobiSolver : detail::ISolver
 
   static bool is_available();
 
+  void compute_iis();
+
   GRBEnv env;
   mutable GRBModel model;
   mutable bool pending_update;

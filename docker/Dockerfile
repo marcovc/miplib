@@ -83,15 +83,15 @@ COPY --from=COMPILE /usr/local/include/ /usr/local/include/
 # ./SCIPOptSuite-7.0.2-Linux-ubuntu.sh --skip-license
 
 # Install Gurobi solver
-COPY ./docker/gurobi9.5.0_linux64.tar.gz $WORKDIR
-RUN tar xzf gurobi9.5.0_linux64.tar.gz
+COPY ./docker/gurobi11.0.2_linux64.tar.gz $WORKDIR
+RUN tar xzf gurobi11.0.2_linux64.tar.gz
 #RUN wget --no-check-certificate https://packages.gurobi.com/9.5/gurobi9.5.0_linux64.tar.gz \
 #  && tar xzf gurobi9.5.0_linux64.tar.gz
 #RUN wget --no-check-certificate https://packages.gurobi.com/10.0/gurobi10.0.3_linux64.tar.gz \
 #  && tar xzf gurobi10.0.3_linux64.tar.gz
 
-ENV GUROBI_DIR="/opt/gurobi950/linux64"
-#ENV GUROBI_DIR="/opt/gurobi1003/linux64"
+#ENV GUROBI_DIR="/opt/gurobi950/linux64"
+ENV GUROBI_DIR="/opt/gurobi1102/linux64"
 
 RUN cd $GUROBI_DIR/src/build && \
   make && \

@@ -111,6 +111,8 @@ struct Solver
 
   static std::map<Backend, std::string> backend_info();
 
+  void compute_iis();
+
   private:
   std::shared_ptr<detail::ISolver> p_impl;
   Backend m_backend;
@@ -200,6 +202,8 @@ struct ISolver
 
   Solver::IndicatorConstraintPolicy m_indicator_constraint_policy = 
     Solver::IndicatorConstraintPolicy::ReformulateIfUnsupported;
+
+  virtual void compute_iis();
 };
 
 }  // namespace detail

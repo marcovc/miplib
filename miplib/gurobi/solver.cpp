@@ -532,6 +532,11 @@ void GurobiSolver::setup_reoptimization()
   // Gurobi does not require doing anything explicit before reoptimizing.
 }
 
+void GurobiSolver::compute_iis()
+{
+  call_with_exception_logging([&](){ model.computeIIS(); });
+}
+
 namespace detail {
 
 GurobiCurrentStateHandle::GurobiCurrentStateHandle() : m_active(false)

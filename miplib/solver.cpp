@@ -340,6 +340,11 @@ void Solver::setup_reoptimization()
   p_impl->setup_reoptimization();
 }
 
+void Solver::compute_iis()
+{
+  p_impl->compute_iis();
+}
+
 std::map<Solver::Backend, std::string> Solver::backend_info()
 {
   std::map<Backend, std::string> r;
@@ -362,6 +367,11 @@ namespace detail {
 void ISolver::set_indicator_constraint_policy(Solver::IndicatorConstraintPolicy policy)
 {
   m_indicator_constraint_policy = policy;
+}
+
+void ISolver::compute_iis()
+{
+  throw std::logic_error("Backend does not support computing IIs, or mapping not added yet.");
 }
 
 }
