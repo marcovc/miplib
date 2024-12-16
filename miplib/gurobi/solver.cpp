@@ -542,6 +542,7 @@ namespace detail {
 GurobiCurrentStateHandle::GurobiCurrentStateHandle() : m_active(false)
 {}
 
+
 void GurobiCurrentStateHandle::add_constr_handler(LazyConstrHandler const& constr_hdlr, bool integral_only)
 {
   if (integral_only)
@@ -590,6 +591,8 @@ void GurobiCurrentStateHandle::callback()
   m_active = true;
   try 
   {
+    bool infeasible = false;
+
     // if we are in an integral or non integral node
     if (
       where == GRB_CB_MIPSOL or
@@ -597,14 +600,14 @@ void GurobiCurrentStateHandle::callback()
     )
     {
       for (auto& h : m_constr_hdlrs)
-        h.add();
+        infeasible |= h.add(infeasible);
     }
 
     // if we are in an integral node
     if (where == GRB_CB_MIPSOL)
     {
       for (auto& h: m_integral_only_constr_hdlrs)
-        h.add();
+        infeasible |= h.add(infeasible);
     }
 
     for (auto const& s : m_stoppers)

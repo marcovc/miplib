@@ -112,6 +112,7 @@ struct ScipSolver : detail::ISolver
   SCIP_SOL* p_sol;
   Var* p_aux_obj_var;
   std::unique_ptr<detail::ScipCurrentStateHandle> p_current_state_handler;
+  bool m_destroying;
 };
 
 }  // namespace miplib

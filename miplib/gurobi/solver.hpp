@@ -37,7 +37,6 @@ struct GurobiCurrentStateHandle : GRBCallback, ICurrentStateHandle
 struct GurobiSolver : detail::ISolver
 {
   GurobiSolver(bool verbose = true);
-  virtual ~GurobiSolver() {}
 
   std::shared_ptr<detail::IVar> create_var(
     Solver const& solver,

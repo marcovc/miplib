@@ -18,7 +18,7 @@
 namespace miplib {
 
 
-ScipSolver::ScipSolver(bool verbose): p_env(nullptr), p_sol(nullptr), p_aux_obj_var(nullptr)
+ScipSolver::ScipSolver(bool verbose): p_env(nullptr), p_sol(nullptr), p_aux_obj_var(nullptr), m_destroying(false)
 {
   SCIP_CALL_EXC(SCIPcreate(&p_env));
   SCIP_CALL_EXC(SCIPincludeDefaultPlugins(p_env));
@@ -32,6 +32,7 @@ ScipSolver::ScipSolver(bool verbose): p_env(nullptr), p_sol(nullptr), p_aux_obj_
 
 ScipSolver::~ScipSolver()
 {
+  m_destroying = true;
   if (p_aux_obj_var != nullptr) {
     delete p_aux_obj_var;
   }
@@ -588,8 +589,8 @@ struct ScipConstraintHandler: scip::ObjConshdlr
       SCIP_PRESOLTIMING_MEDIUM     // timing mask of the constraint handler's presolving method
     ),
     m_solver(solver),
-    m_constr_hdlr(constr_hdlr) {
-  }
+    m_constr_hdlr(constr_hdlr)
+    {}
 
   struct CurrentStateHandlerGuard {
     CurrentStateHandlerGuard(ScipSolver& solver, SCIP_SOL* p_sol) : m_solver(solver) {
@@ -620,7 +621,7 @@ struct ScipConstraintHandler: scip::ObjConshdlr
   SCIP_DECL_CONSENFOLP(scip_enfolp)
   {
     CurrentStateHandlerGuard guard(m_solver, nullptr);
-    if (m_constr_hdlr.add())
+    if (m_constr_hdlr.add(solinfeasible))
       *result = SCIP_CONSADDED;
     else
       *result = SCIP_FEASIBLE;
@@ -639,6 +640,8 @@ struct ScipConstraintHandler: scip::ObjConshdlr
 
   SCIP_DECL_CONSLOCK(scip_lock)
   {
+    if (m_solver.m_destroying)
+      return SCIP_OKAY; // For some reason SCIP is calling this method from its destructor...
     CurrentStateHandlerGuard guard(m_solver, nullptr);
     for (auto const& v: m_constr_hdlr.depends())
     {

@@ -32,6 +32,18 @@ struct Vars
     return v;
   }
 
+  std::vector<Var> as_vector(std::size_t s, std::string name) const
+  {
+    std::vector<Var> v;
+    for (std::size_t i = 0; i < s; ++i)
+    {
+      auto var = std::make_from_tuple<Var>(m_var_args);
+      var.set_name(name + "_" + std::to_string(i));
+      v.push_back(var);
+    }
+    return v;
+  }
+
   template<class Container>
   auto as_unordered_map_values(Container const& keys) const ->
     std::unordered_map<typename std::decay<decltype(*std::begin(keys))>::type, Var> 

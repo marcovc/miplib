@@ -18,8 +18,10 @@ struct ICurrentStateHandle
 struct ILazyConstrHandler
 {
   virtual bool is_feasible() = 0;
-  // returns if at least one constraint was added to the model
-  virtual bool add() = 0;
+  // The argument infeasible is true to indicate if other constraint handlers already 
+  // added constraints to the current node.
+  // Returns if at least one constraint was added to the model. 
+  virtual bool add(bool infeasible) = 0;
   virtual std::vector<Var> depends() const = 0;
 };
 
@@ -33,7 +35,7 @@ struct LazyConstrHandler
 
   std::vector<Var> depends() const { return p_impl->depends(); }
   bool is_feasible() { return p_impl->is_feasible(); }
-  bool add() { return p_impl->add(); }
+  bool add(bool infeasible) { return p_impl->add(infeasible); }
 
   private:
   std::shared_ptr<ILazyConstrHandler> p_impl;
