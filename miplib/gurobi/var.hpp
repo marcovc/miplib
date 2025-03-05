@@ -27,7 +27,8 @@ struct GurobiVar : detail::IVar
   void set_lb(double new_lb);
   void set_ub(double new_ub);
 
-  void set_start_value(double v);
+  // start_index is the index of the warm start (i.e. to allow multiple warm start solutions).
+  void set_start_value(std::size_t start_index, double v);
   void set_hint(double v);
 
   Solver m_solver;

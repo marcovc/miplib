@@ -325,9 +325,9 @@ void Solver::dump(std::string const& filename) const
   p_impl->dump(filename);
 }
 
-void Solver::set_warm_start(PartialSolution const& partial_solution)
+void Solver::add_warm_start(PartialSolution const& partial_solution)
 {
-  p_impl->set_warm_start(partial_solution);
+  p_impl->add_warm_start(partial_solution);
 }
 
 void Solver::set_reoptimizing(bool value)

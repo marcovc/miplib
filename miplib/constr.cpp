@@ -180,6 +180,11 @@ std::optional<std::string> const& IndicatorConstr::name() const
   return p_impl->m_name;
 }
 
+IndicatorConstr IndicatorConstr::with_name(std::string const& name) const
+{
+  return IndicatorConstr(implicant().expr().solver(), implicant(), implicand(), name);
+}
+
 std::ostream& operator<<(std::ostream& os, IndicatorConstr const& ic)
 {
   os << ic.implicant() << " -> " << ic.implicand();
@@ -250,7 +255,12 @@ std::vector<Constr> IndicatorConstr::reformulation() const
 
   // add ub reformulation if not redundant
   if (ub > 0) 
-    r.push_back(implicand().expr() <= ub * implicant().reified());
+  {
+    auto c = implicand().expr() <= ub * implicant().reified();
+    if (name())
+      c = c.with_name(*name() + (implicand().type() == Constr::Type::Equal ? "_ub" : ""));
+    r.push_back(c);
+  }
 
   if (implicand().type() == Constr::Type::LessEqual)
     return r;
@@ -270,7 +280,12 @@ std::vector<Constr> IndicatorConstr::reformulation() const
   // <-> LinExpr - ub(LinExpr) * (1-z) <= 0 /\ -LinExpr + lb(LinExpr) * (1-z) <= 0
 
   if (lb < 0) 
-    r.push_back(lb * implicant().reified() <= implicand().expr());
+  {
+    auto c = lb * implicant().reified() <= implicand().expr();
+    if (name())
+      c = c.with_name(*name() + "_lb");
+    r.push_back(c);
+  }
 
   return r;
 }

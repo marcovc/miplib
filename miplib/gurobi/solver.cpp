@@ -510,15 +510,20 @@ bool GurobiSolver::is_in_callback() const
   return p_callback and p_callback->is_active();
 }
 
-void GurobiSolver::set_warm_start(PartialSolution const& partial_solution)
+void GurobiSolver::add_warm_start(PartialSolution const& partial_solution)
 {
   if (is_in_callback())
     throw std::logic_error("Cannot add warm start from callback.");
 
+  update_if_pending();
+  std::size_t current_nr_warm_starts = model.get(GRB_IntAttr_NumStart);
+  model.set(GRB_IntAttr_NumStart, current_nr_warm_starts + 1);
+  set_pending_update();
+  
   for (auto const& [var, val]: partial_solution)
   {
     auto& m_var = static_cast<GurobiVar&>(*var.p_impl);
-    m_var.set_start_value(val);
+    m_var.set_start_value(current_nr_warm_starts, val);
   }
 }
 

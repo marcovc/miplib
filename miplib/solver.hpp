@@ -100,7 +100,7 @@ struct Solver
   void set_stopper(std::function<bool()> const&);
 
   // Used to build initial feasible solution.
-  void set_warm_start(PartialSolution const& partial_solution);
+  void add_warm_start(PartialSolution const& partial_solution);
 
   // SCIP requires to know in advance if the problem is to be solved
   // multiple times.
@@ -195,7 +195,7 @@ struct ISolver
 
   virtual void dump(std::string const& filename) const = 0;
 
-  virtual void set_warm_start(PartialSolution const& partial_solution) = 0;
+  virtual void add_warm_start(PartialSolution const& partial_solution) = 0;
 
   virtual void set_reoptimizing(bool) = 0;
   virtual void setup_reoptimization() = 0;

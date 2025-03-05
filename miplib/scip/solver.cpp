@@ -496,7 +496,7 @@ bool ScipSolver::is_in_callback() const
   return (bool)p_current_state_handler;
 }
 
-void ScipSolver::set_warm_start(PartialSolution const& partial_solution)
+void ScipSolver::add_warm_start(PartialSolution const& partial_solution)
 {
   SCIP_SOL* p_sol;
   SCIP_CALL_EXC(SCIPcreatePartialSol(p_env, &p_sol, NULL));

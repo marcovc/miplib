@@ -98,8 +98,8 @@ struct GurobiSolver : detail::ISolver
 
   bool is_in_callback() const;
   
-  void set_warm_start(PartialSolution const& partial_solution);
-  
+  void add_warm_start(PartialSolution const& partial_solution);
+
   void set_reoptimizing(bool);
   void setup_reoptimization();
 

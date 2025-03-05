@@ -83,6 +83,8 @@ struct IndicatorConstr
   Constr const& implicand() const;
   std::optional<std::string> const& name() const;
   
+  IndicatorConstr with_name(std::string const& name) const;
+
   bool has_reformulation() const;
   std::vector<Constr> reformulation() const;
 
