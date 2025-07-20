@@ -22,8 +22,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
   && apt-get install -y --no-install-recommends g++ gfortran make cmake ca-certificates wget   \
   pkg-config libblas3 libgfortran5 libgsl-dev libgslcblas0 liblapack3 libtbbmalloc2 libboost-program-options1.71 \
-    build-essential libgmp-dev libblas-dev libbliss-dev zlib1g-dev libgsl-dev libcliquer-dev \
-    libreadline-dev liblapack-dev git file \
+  build-essential libgmp-dev libblas-dev libbliss-dev zlib1g-dev libgsl-dev libcliquer-dev \
+  libreadline-dev liblapack-dev git file \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
@@ -67,9 +67,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    wget libblas3 libgfortran5 libgsl-dev libgslcblas0 liblapack3 libtbbmalloc2 libboost-program-options1.71 lp-solve \
-    build-essential cmake g++ libgmp-dev libblas-dev libbliss-dev zlib1g-dev libgsl-dev libcliquer-dev \
-    libreadline-dev git ca-certificates ssh liblpsolve55-dev libgomp1 \
+  wget libblas3 libgfortran5 libgsl-dev libgslcblas0 liblapack3 libtbbmalloc2 libboost-program-options1.71 lp-solve \
+  build-essential cmake g++ libgmp-dev libblas-dev libbliss-dev zlib1g-dev libgsl-dev libcliquer-dev \
+  libreadline-dev git ca-certificates ssh liblpsolve55-dev libgomp1 \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
@@ -83,15 +83,15 @@ COPY --from=COMPILE /usr/local/include/ /usr/local/include/
 # ./SCIPOptSuite-7.0.2-Linux-ubuntu.sh --skip-license
 
 # Install Gurobi solver
-COPY ./docker/gurobi11.0.2_linux64.tar.gz $WORKDIR
-RUN tar xzf gurobi11.0.2_linux64.tar.gz
+COPY ./docker/gurobi12.0.2_linux64.tar.gz $WORKDIR
+RUN tar xzf gurobi12.0.2_linux64.tar.gz
 #RUN wget --no-check-certificate https://packages.gurobi.com/9.5/gurobi9.5.0_linux64.tar.gz \
 #  && tar xzf gurobi9.5.0_linux64.tar.gz
 #RUN wget --no-check-certificate https://packages.gurobi.com/10.0/gurobi10.0.3_linux64.tar.gz \
 #  && tar xzf gurobi10.0.3_linux64.tar.gz
 
 #ENV GUROBI_DIR="/opt/gurobi950/linux64"
-ENV GUROBI_DIR="/opt/gurobi1102/linux64"
+ENV GUROBI_DIR="/opt/gurobi1202/linux64"
 
 RUN cd $GUROBI_DIR/src/build && \
   make && \
