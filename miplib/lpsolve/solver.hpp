@@ -38,7 +38,10 @@ struct LpsolveSolver : detail::ISolver
 
   void remove(Constr const& constr);
 
-  void add_lazy_constr_handler(LazyConstrHandler const&, bool) { throw std::logic_error("Not implemented yet."); }
+  void add_lazy_constr_handler(LazyConstrHandler const&, bool)
+  {
+    throw std::logic_error("Not implemented yet.");
+  }
 
   std::pair<Solver::Result, bool> solve();
 
@@ -47,6 +50,8 @@ struct LpsolveSolver : detail::ISolver
   void set_int_feasibility_tolerance(double value);
   void set_feasibility_tolerance(double value);
   void set_epsilon(double value);
+  void set_numeric_focus(int /*focus*/);
+
   void set_nr_threads(std::size_t nr_threads);
 
   double get_int_feasibility_tolerance() const;
@@ -59,8 +64,14 @@ struct LpsolveSolver : detail::ISolver
 
   bool supports_indicator_constraint(IndicatorConstr const& constr) const;
 
-  bool supports_quadratic_constraints() const { return false; }
-  bool supports_quadratic_objective() const { return false; }
+  bool supports_quadratic_constraints() const
+  {
+    return false;
+  }
+  bool supports_quadratic_objective() const
+  {
+    return false;
+  }
 
   double infinity() const;
 

@@ -3,18 +3,19 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 
 
-#include <miplib/gurobi/solver.hpp>
-#include <miplib/var.hpp>
-#include <miplib/gurobi/var.hpp>
 #include <miplib/gurobi/constr.hpp>
 #include <miplib/gurobi/exception.hpp>
+#include <miplib/gurobi/solver.hpp>
+#include <miplib/gurobi/var.hpp>
+#include <miplib/var.hpp>
 
 #include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
 
 namespace miplib {
 
-static GRBEnv init_env(bool verbose) {
+static GRBEnv init_env(bool verbose)
+{
   GRBEnv env(true);
   env.set(GRB_IntParam_OutputFlag, verbose);
   env.start();
@@ -25,7 +26,7 @@ GurobiSolver::GurobiSolver(bool verbose) :
   env(init_env(verbose)),
   model(env),
   pending_update(false)
-  {}
+{}
 
 void GurobiSolver::set_pending_update() const
 {
@@ -97,7 +98,8 @@ static GRBLinExpr as_grb_lin_expr(Expr const& e)
   std::transform(
     vars.begin(), vars.end(), std::back_inserter(grb_vars), [](auto const& v) {
       return static_cast<GurobiVar const&>(*v.p_impl).m_var;
-    });
+    }
+  );
   ge.addTerms(coeffs.data(), grb_vars.data(), coeffs.size());
   return ge;
 }
@@ -120,7 +122,8 @@ static GRBQuadExpr as_grb_quad_expr(Expr const& e)
     std::transform(
       vars.begin(), vars.end(), std::back_inserter(grb_vars), [](auto const& v) {
         return static_cast<GurobiVar const&>(*v.p_impl).m_var;
-      });
+      }
+    );
     ge.addTerms(coeffs.data(), grb_vars.data(), coeffs.size());
   }
 
@@ -137,13 +140,15 @@ static GRBQuadExpr as_grb_quad_expr(Expr const& e)
   std::transform(
     vars_1.begin(), vars_1.end(), std::back_inserter(grb_vars_1), [](auto const& v) {
       return static_cast<GurobiVar const&>(*v.p_impl).m_var;
-    });
+    }
+  );
 
   std::vector<GRBVar> grb_vars_2;
   std::transform(
     vars_2.begin(), vars_2.end(), std::back_inserter(grb_vars_2), [](auto const& v) {
       return static_cast<GurobiVar const&>(*v.p_impl).m_var;
-    });
+    }
+  );
 
   ge.addTerms(coeffs.data(), grb_vars_1.data(), grb_vars_2.data(), coeffs.size());
 
@@ -163,13 +168,13 @@ std::shared_ptr<detail::IConstr> GurobiSolver::create_constr(
     return std::make_shared<GurobiQuadConstr>(e, type, name);
   }
   throw std::logic_error(
-    fmt::format("Gurobi does not support constraint involving expression {}.", e));
+    fmt::format("Gurobi does not support constraint involving expression {}.", e)
+  );
 }
 
 std::shared_ptr<detail::IIndicatorConstr> GurobiSolver::create_indicator_constr(
-  Constr const& implicant,
-  Constr const& implicand,
-  std::optional<std::string> const& name)
+  Constr const& implicant, Constr const& implicand, std::optional<std::string> const& name
+)
 {
   return std::make_shared<GurobiIndicatorConstr>(implicant, implicand, name);
 }
@@ -183,9 +188,9 @@ void GurobiSolver::set_objective(Solver::Sense const& sense, Expr const& e)
     model.setObjective(grb_expr, grb_sense);
     model_has_changed_since_last_solve = true;
   }
-  else
-  if (e.is_quadratic()) {
-    GRBQuadExpr grb_expr = as_grb_quad_expr(e);    
+  else if (e.is_quadratic())
+  {
+    GRBQuadExpr grb_expr = as_grb_quad_expr(e);
     model.setObjective(grb_expr, grb_sense);
     model_has_changed_since_last_solve = true;
   }
@@ -226,9 +231,9 @@ void GurobiSolver::add(Constr const& constr)
 
     char sense = (type == Constr::LessEqual) ? GRB_LESS_EQUAL : GRB_EQUAL;
 
-    static_cast<GurobiLinConstr const&>(*constr.p_impl).m_constr
-      = model.addConstr(lhs_expr, sense, 0, name.value_or(""));
-    
+    static_cast<GurobiLinConstr const&>(*constr.p_impl).m_constr =
+      model.addConstr(lhs_expr, sense, 0, name.value_or(""));
+
     model_has_changed_since_last_solve = true;
   }
   else if (e.is_quadratic())
@@ -237,8 +242,8 @@ void GurobiSolver::add(Constr const& constr)
 
     char sense = (type == Constr::LessEqual) ? GRB_LESS_EQUAL : GRB_EQUAL;
 
-    static_cast<GurobiQuadConstr const&>(*constr.p_impl).m_constr
-      = model.addQConstr(lhs_expr, sense, 0, name.value_or(""));
+    static_cast<GurobiQuadConstr const&>(*constr.p_impl).m_constr =
+      model.addQConstr(lhs_expr, sense, 0, name.value_or(""));
 
     model_has_changed_since_last_solve = true;
   }
@@ -289,7 +294,8 @@ void GurobiSolver::add(IndicatorConstr const& constr)
 
   if (is_in_callback())
     throw std::logic_error(
-      "Gurobi doesn't support adding indicator constraints during solving. Try ctr.reformulation()."
+      "Gurobi doesn't support adding indicator constraints during solving. Try "
+      "ctr.reformulation()."
     );
 
   auto const& implicant = constr.implicant();
@@ -306,7 +312,7 @@ void GurobiSolver::add(IndicatorConstr const& constr)
   double c = -implicant_linear_coeffs[0] * implicant.expr().constant();
   assert(c == 0 or c == 1);
 
-  int bin_val = (int) c;
+  int bin_val = (int)c;
   GRBVar bin_var = static_cast<GurobiVar const&>(*implicant_linear_vars[0].p_impl).m_var;
 
   assert(implicand.expr().is_linear());
@@ -315,9 +321,10 @@ void GurobiSolver::add(IndicatorConstr const& constr)
 
   char sense = (implicand.type() == Constr::LessEqual) ? GRB_LESS_EQUAL : GRB_EQUAL;
 
-  static_cast<GurobiIndicatorConstr const&>(*constr.p_impl).m_constr
-    = model.addGenConstrIndicator(
-      bin_var, bin_val, implicand_expr, sense, 0, name.value_or(""));
+  static_cast<GurobiIndicatorConstr const&>(*constr.p_impl).m_constr =
+    model.addGenConstrIndicator(
+      bin_var, bin_val, implicand_expr, sense, 0, name.value_or("")
+    );
 
   model_has_changed_since_last_solve = true;
 }
@@ -330,8 +337,7 @@ void GurobiSolver::remove(Constr const& constr)
     model.remove(c.m_constr.value());
     model_has_changed_since_last_solve = true;
   }
-  else
-  if (std::dynamic_pointer_cast<GurobiQuadConstr>(constr.p_impl))
+  else if (std::dynamic_pointer_cast<GurobiQuadConstr>(constr.p_impl))
   {
     auto const& c = static_cast<GurobiQuadConstr const&>(*constr.p_impl);
     model.remove(c.m_constr.value());
@@ -345,7 +351,7 @@ void GurobiSolver::set_non_convex_policy(Solver::NonConvexPolicy policy)
 {
   switch (policy)
   {
-    case Solver::NonConvexPolicy::Error:    
+    case Solver::NonConvexPolicy::Error:
       model.set(GRB_IntParam_NonConvex, 0);
       break;
     case Solver::NonConvexPolicy::Linearize:
@@ -374,6 +380,11 @@ void GurobiSolver::set_epsilon(double /*value*/)
   // it seems it is not possible to set this value in gurobi
 }
 
+void GurobiSolver::set_numeric_focus(int focus)
+{
+  model.set(GRB_IntParam_NumericFocus, focus);
+}
+
 void GurobiSolver::set_nr_threads(std::size_t nr_threads)
 {
   model.set(GRB_IntParam_Threads, nr_threads);
@@ -396,7 +407,9 @@ double GurobiSolver::get_epsilon() const
   return get_feasibility_tolerance();
 }
 
-static std::pair<Solver::Result, bool> grb_status_to_solver_result(int grb_status, bool has_solution)
+static std::pair<Solver::Result, bool> grb_status_to_solver_result(
+  int grb_status, bool has_solution
+)
 {
   switch (grb_status)
   {
@@ -436,11 +449,11 @@ std::pair<Solver::Result, bool> GurobiSolver::solve()
   {
     spdlog::warn("Will not resolve a model that has not changed .");
     auto grb_status = model.get(GRB_IntAttr_Status);
-    bool has_solution = model.get(GRB_IntAttr_SolCount) > 0; 
+    bool has_solution = model.get(GRB_IntAttr_SolCount) > 0;
     return grb_status_to_solver_result(grb_status, has_solution);
   }
 
-  call_with_exception_logging([&]{model.optimize();});
+  call_with_exception_logging([&] { model.optimize(); });
 
   bool has_solution = model.get(GRB_IntAttr_SolCount) > 0;
 
@@ -470,7 +483,7 @@ void GurobiSolver::set_gap_time_limit(double secs, double max_rel_gap)
 {
   if (!p_callback)
   {
-    model.set(GRB_IntParam_LazyConstraints, 1); // not sure if this is needed
+    model.set(GRB_IntParam_LazyConstraints, 1);  // not sure if this is needed
     p_callback = std::make_unique<detail::GurobiCurrentStateHandle>();
     model.setCallback(p_callback.get());
   }
@@ -480,7 +493,7 @@ void GurobiSolver::set_gap_time_limit(double secs, double max_rel_gap)
       return false;
     if (*runtime <= secs)
       return false;
-    
+
     auto cur_rel_gap = p_callback->gap();
     if (!cur_rel_gap)
       return false;
@@ -498,7 +511,7 @@ void GurobiSolver::set_stopper(std::function<bool()> const& stopper)
 {
   if (!p_callback)
   {
-    model.set(GRB_IntParam_LazyConstraints, 1); // not sure if this is needed
+    model.set(GRB_IntParam_LazyConstraints, 1);  // not sure if this is needed
     p_callback = std::make_unique<detail::GurobiCurrentStateHandle>();
     model.setCallback(p_callback.get());
   }
@@ -519,8 +532,8 @@ void GurobiSolver::add_warm_start(PartialSolution const& partial_solution)
   std::size_t current_nr_warm_starts = model.get(GRB_IntAttr_NumStart);
   model.set(GRB_IntAttr_NumStart, current_nr_warm_starts + 1);
   set_pending_update();
-  
-  for (auto const& [var, val]: partial_solution)
+
+  for (auto const& [var, val] : partial_solution)
   {
     auto& m_var = static_cast<GurobiVar&>(*var.p_impl);
     m_var.set_start_value(current_nr_warm_starts, val);
@@ -539,16 +552,17 @@ void GurobiSolver::setup_reoptimization()
 
 void GurobiSolver::compute_iis()
 {
-  call_with_exception_logging([&](){ model.computeIIS(); });
+  call_with_exception_logging([&]() { model.computeIIS(); });
 }
 
 namespace detail {
 
-GurobiCurrentStateHandle::GurobiCurrentStateHandle() : m_active(false)
-{}
+GurobiCurrentStateHandle::GurobiCurrentStateHandle() : m_active(false) {}
 
 
-void GurobiCurrentStateHandle::add_constr_handler(LazyConstrHandler const& constr_hdlr, bool integral_only)
+void GurobiCurrentStateHandle::add_constr_handler(
+  LazyConstrHandler const& constr_hdlr, bool integral_only
+)
 {
   if (integral_only)
     m_integral_only_constr_hdlrs.push_back(constr_hdlr);
@@ -562,15 +576,14 @@ void GurobiCurrentStateHandle::add_stopper(GurobiStopper const& stopper)
 }
 
 double GurobiCurrentStateHandle::value(IVar const& var) const
-{ 
+{
   GRBVar grb_var = static_cast<GurobiVar const&>(var).m_var;
   if (where == GRB_CB_MIPSOL or where == GRB_CB_MULTIOBJ)
     return const_cast<GurobiCurrentStateHandle*>(this)->getSolution(grb_var);
-  else
-  if (
-    where == GRB_CB_MIPNODE and 
-    const_cast<GurobiCurrentStateHandle*>(this)->getIntInfo(GRB_CB_MIPNODE_STATUS) == GRB_OPTIMAL
-  )
+  else if (where == GRB_CB_MIPNODE and
+           const_cast<GurobiCurrentStateHandle*>(this)->getIntInfo(
+             GRB_CB_MIPNODE_STATUS
+           ) == GRB_OPTIMAL)
     return const_cast<GurobiCurrentStateHandle*>(this)->getNodeRel(grb_var);
 
   throw std::logic_error("Failure to obtain variable value from current node.");
@@ -594,25 +607,21 @@ void GurobiCurrentStateHandle::add_lazy(Constr const& constr)
 void GurobiCurrentStateHandle::callback()
 {
   m_active = true;
-  try 
+  try
   {
     bool infeasible = false;
 
     // if we are in an integral or non integral node
-    if (
-      where == GRB_CB_MIPSOL or
-      (where == GRB_CB_MIPNODE and getIntInfo(GRB_CB_MIPNODE_STATUS) == GRB_OPTIMAL)
-    )
+    if (where == GRB_CB_MIPSOL or
+        (where == GRB_CB_MIPNODE and getIntInfo(GRB_CB_MIPNODE_STATUS) == GRB_OPTIMAL))
     {
-      for (auto& h : m_constr_hdlrs)
-        infeasible |= h.add(infeasible);
+      for (auto& h : m_constr_hdlrs) infeasible |= h.add(infeasible);
     }
 
     // if we are in an integral node
     if (where == GRB_CB_MIPSOL)
     {
-      for (auto& h: m_integral_only_constr_hdlrs)
-        infeasible |= h.add(infeasible);
+      for (auto& h : m_integral_only_constr_hdlrs) infeasible |= h.add(infeasible);
     }
 
     for (auto const& s : m_stoppers)
@@ -630,25 +639,29 @@ void GurobiCurrentStateHandle::callback()
   m_active = false;
 }
 
-std::optional<double> GurobiCurrentStateHandle::runtime() const 
-{ 
+std::optional<double> GurobiCurrentStateHandle::runtime() const
+{
   if (where == GRB_CB_POLLING)
     return std::nullopt;
-  return const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_RUNTIME); 
-} 
+  return const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_RUNTIME);
+}
 
 std::optional<double> GurobiCurrentStateHandle::gap() const
-{ 
+{
   if (where != GRB_CB_MIP)
     return std::nullopt;
-  auto bound = const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_MIP_OBJBND); 
-  auto best =  const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_MIP_OBJBST); 
-  return std::abs(bound - best)/std::abs(best);
-} 
+  auto bound =
+    const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_MIP_OBJBND);
+  auto best =
+    const_cast<GurobiCurrentStateHandle&>(*this).getDoubleInfo(GRB_CB_MIP_OBJBST);
+  return std::abs(bound - best) / std::abs(best);
+}
 
-} // namespace detail
+}  // namespace detail
 
-void GurobiSolver::add_lazy_constr_handler(LazyConstrHandler const& constr_hdlr, bool at_integral_only)
+void GurobiSolver::add_lazy_constr_handler(
+  LazyConstrHandler const& constr_hdlr, bool at_integral_only
+)
 {
   if (!p_callback)
   {
@@ -662,16 +675,14 @@ void GurobiSolver::add_lazy_constr_handler(LazyConstrHandler const& constr_hdlr,
 std::string GurobiSolver::backend_info()
 {
   return fmt::format(
-    "Gurobi {}.{}.{}",
-    GRB_VERSION_MAJOR,
-    GRB_VERSION_MINOR,
-    GRB_VERSION_TECHNICAL
+    "Gurobi {}.{}.{}", GRB_VERSION_MAJOR, GRB_VERSION_MINOR, GRB_VERSION_TECHNICAL
   );
 }
 
 bool GurobiSolver::is_available()
 {
-  try {
+  try
+  {
     GRBEnv env(true);
     env.set(GRB_IntParam_OutputFlag, 0);
     env.start();

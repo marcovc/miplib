@@ -20,9 +20,14 @@ struct GurobiCurrentStateHandle : GRBCallback, ICurrentStateHandle
   double value(IVar const& var) const;
   void add_lazy(Constr const& constr);
   void callback();
-  bool is_active() const { return m_active; }
-  std::optional<double> runtime() const;  // optional since not every callback invocation allows to query this property
-  std::optional<double> gap() const; // optional since not every callback invocation allows to query this property
+  bool is_active() const
+  {
+    return m_active;
+  }
+  std::optional<double> runtime() const;  // optional since not every callback invocation
+                                          // allows to query this property
+  std::optional<double> gap() const;      // optional since not every callback invocation
+                                          // allows to query this property
 
   // constraint handlers that can run on integral or non-integral nodes
   std::vector<LazyConstrHandler> m_constr_hdlrs;
@@ -32,7 +37,7 @@ struct GurobiCurrentStateHandle : GRBCallback, ICurrentStateHandle
   std::vector<GurobiStopper> m_stoppers;
   bool m_active;
 };
-}
+}  // namespace detail
 
 struct GurobiSolver : detail::ISolver
 {
@@ -53,7 +58,8 @@ struct GurobiSolver : detail::ISolver
   std::shared_ptr<detail::IIndicatorConstr> create_indicator_constr(
     Constr const& implicant,
     Constr const& implicand,
-    std::optional<std::string> const& name);
+    std::optional<std::string> const& name
+  );
 
   void set_objective(Solver::Sense const& sense, Expr const& e);
   double get_objective_value() const;
@@ -72,8 +78,10 @@ struct GurobiSolver : detail::ISolver
   void set_int_feasibility_tolerance(double value);
   void set_feasibility_tolerance(double value);
   void set_epsilon(double value);
+  void set_numeric_focus(int focus);
+
   void set_nr_threads(std::size_t);
-  
+
   double get_int_feasibility_tolerance() const;
   double get_feasibility_tolerance() const;
   double get_epsilon() const;
@@ -81,8 +89,14 @@ struct GurobiSolver : detail::ISolver
   void set_pending_update() const;
   void update_if_pending() const;
 
-  bool supports_quadratic_constraints() const { return true; }
-  bool supports_quadratic_objective() const { return true; }
+  bool supports_quadratic_constraints() const
+  {
+    return true;
+  }
+  bool supports_quadratic_objective() const
+  {
+    return true;
+  }
 
   bool supports_indicator_constraint(IndicatorConstr const& i) const;
 
@@ -97,7 +111,7 @@ struct GurobiSolver : detail::ISolver
   void dump(std::string const& filename) const;
 
   bool is_in_callback() const;
-  
+
   void add_warm_start(PartialSolution const& partial_solution);
 
   void set_reoptimizing(bool);

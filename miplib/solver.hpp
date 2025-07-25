@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
 #include <map>
+#include <memory>
 
-#include "var.hpp"
 #include "constr.hpp"
 #include "lazy.hpp"
+#include "var.hpp"
 
 namespace miplib {
 
@@ -20,7 +20,11 @@ struct Solver
   enum class BackendRequest { Gurobi, Scip, Lpsolve, BestAtCompileTime, BestAtRunTime };
   enum class Backend { Gurobi, Scip, Lpsolve };
   enum class NonConvexPolicy { Error, Linearize, Branch };
-  enum class IndicatorConstraintPolicy { PassThrough, Reformulate, ReformulateIfUnsupported };
+  enum class IndicatorConstraintPolicy {
+    PassThrough,
+    Reformulate,
+    ReformulateIfUnsupported
+  };
   enum class Sense { Maximize, Minimize };
   enum class Result {
     Optimal,
@@ -32,7 +36,7 @@ struct Solver
     Other
   };
 
-  Solver(BackendRequest backend_request, bool verbose=true);
+  Solver(BackendRequest backend_request, bool verbose = true);
 
   Backend const& backend() const
   {
@@ -50,7 +54,9 @@ struct Solver
 
   void remove(Constr const& constr);
 
-  void add_lazy_constr_handler(LazyConstrHandler const& constr_handler, bool at_integral_only);
+  void add_lazy_constr_handler(
+    LazyConstrHandler const& constr_handler, bool at_integral_only
+  );
 
   void set_non_convex_policy(NonConvexPolicy policy);
   void set_indicator_constraint_policy(IndicatorConstraintPolicy policy);
@@ -59,6 +65,7 @@ struct Solver
   void set_int_feasibility_tolerance(double value);
   void set_feasibility_tolerance(double value);
   void set_epsilon(double value);
+  void set_numeric_focus(int focus);
   void set_nr_threads(std::size_t);
 
   double get_int_feasibility_tolerance() const;
@@ -164,7 +171,9 @@ struct ISolver
 
   virtual void remove(Constr const& constr) = 0;
 
-  virtual void add_lazy_constr_handler(LazyConstrHandler const& constr, bool at_integral_only) = 0;
+  virtual void add_lazy_constr_handler(
+    LazyConstrHandler const& constr, bool at_integral_only
+  ) = 0;
   virtual std::pair<Solver::Result, bool> solve() = 0;
   virtual void set_non_convex_policy(Solver::NonConvexPolicy policy) = 0;
   virtual void set_indicator_constraint_policy(Solver::IndicatorConstraintPolicy policy);
@@ -172,6 +181,7 @@ struct ISolver
   virtual void set_int_feasibility_tolerance(double value) = 0;
   virtual void set_feasibility_tolerance(double value) = 0;
   virtual void set_epsilon(double value) = 0;
+  virtual void set_numeric_focus(int focus) = 0;
   virtual void set_nr_threads(std::size_t) = 0;
 
   virtual double get_int_feasibility_tolerance() const = 0;
@@ -200,7 +210,7 @@ struct ISolver
   virtual void set_reoptimizing(bool) = 0;
   virtual void setup_reoptimization() = 0;
 
-  Solver::IndicatorConstraintPolicy m_indicator_constraint_policy = 
+  Solver::IndicatorConstraintPolicy m_indicator_constraint_policy =
     Solver::IndicatorConstraintPolicy::ReformulateIfUnsupported;
 
   virtual void compute_iis();
@@ -208,6 +218,8 @@ struct ISolver
 
 }  // namespace detail
 
-std::ostream& operator<<(std::ostream& os, Solver::BackendRequest const& solver_backend_request);
+std::ostream& operator<<(
+  std::ostream& os, Solver::BackendRequest const& solver_backend_request
+);
 
 }  // namespace miplib

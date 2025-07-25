@@ -22,13 +22,16 @@ struct ScipCurrentStateHandle : ICurrentStateHandle
 
   double value(IVar const& var) const;
   void add_lazy(Constr const& constr);
-  bool is_active() const { return m_active; }
+  bool is_active() const
+  {
+    return m_active;
+  }
 
   ScipSolver& m_solver;
   SCIP_SOL* p_sol;
   bool m_active;
 };
-}
+}  // namespace detail
 
 struct ScipSolver : detail::ISolver
 {
@@ -61,8 +64,10 @@ struct ScipSolver : detail::ISolver
   void add(IndicatorConstr const& constr);
 
   void remove(Constr const& constr);
-  
-  void add_lazy_constr_handler(LazyConstrHandler const& constr, bool at_integral_nodes_only);
+
+  void add_lazy_constr_handler(
+    LazyConstrHandler const& constr, bool at_integral_nodes_only
+  );
 
   std::pair<Solver::Result, bool> solve();
 
@@ -70,6 +75,8 @@ struct ScipSolver : detail::ISolver
   void set_int_feasibility_tolerance(double value);
   void set_feasibility_tolerance(double value);
   void set_epsilon(double value);
+  void set_numeric_focus(int /*focus*/);
+
   void set_nr_threads(std::size_t nr_threads);
 
   double get_int_feasibility_tolerance() const;
@@ -82,8 +89,14 @@ struct ScipSolver : detail::ISolver
 
   bool supports_indicator_constraint(IndicatorConstr const& constr) const;
 
-  bool supports_quadratic_constraints() const { return true; }
-  bool supports_quadratic_objective() const { return true; }
+  bool supports_quadratic_constraints() const
+  {
+    return true;
+  }
+  bool supports_quadratic_objective() const
+  {
+    return true;
+  }
 
   double infinity() const;
 

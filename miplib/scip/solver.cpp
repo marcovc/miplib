@@ -4,27 +4,31 @@
 #include <miplib/scip/solver.hpp>
 #include <miplib/scip/util.hpp>
 
-#include <miplib/scip/var.hpp>
-#include <miplib/scip/constr.hpp>
 #include <miplib/lazy.hpp>
+#include <miplib/scip/constr.hpp>
+#include <miplib/scip/var.hpp>
 
 #include <fmt/ostream.h>
 
-#include <scip/scipdefplugins.h>
 #include <objscip/objconshdlr.h>
+#include <scip/scipdefplugins.h>
 
 #include <spdlog/spdlog.h>
 
 namespace miplib {
 
 
-ScipSolver::ScipSolver(bool verbose): p_env(nullptr), p_sol(nullptr), p_aux_obj_var(nullptr), m_destroying(false)
+ScipSolver::ScipSolver(bool verbose) :
+  p_env(nullptr),
+  p_sol(nullptr),
+  p_aux_obj_var(nullptr),
+  m_destroying(false)
 {
   SCIP_CALL_EXC(SCIPcreate(&p_env));
   SCIP_CALL_EXC(SCIPincludeDefaultPlugins(p_env));
 
   SCIP_CALL_EXC(SCIPcreateProbBasic(p_env, "unnamed"));
-  //SCIP_CALL_EXC(SCIPsetPresolving(p_env, SCIP_PARAMSETTING_OFF, true));
+  // SCIP_CALL_EXC(SCIPsetPresolving(p_env, SCIP_PARAMSETTING_OFF, true));
 
   set_verbose(verbose);
 }
@@ -33,7 +37,8 @@ ScipSolver::ScipSolver(bool verbose): p_env(nullptr), p_sol(nullptr), p_aux_obj_
 ScipSolver::~ScipSolver()
 {
   m_destroying = true;
-  if (p_aux_obj_var != nullptr) {
+  if (p_aux_obj_var != nullptr)
+  {
     delete p_aux_obj_var;
   }
   SCIP_CALL_TERM(SCIPfree(&p_env));
@@ -59,9 +64,7 @@ std::shared_ptr<detail::IConstr> ScipSolver::create_constr(
 }
 
 std::shared_ptr<detail::IIndicatorConstr> ScipSolver::create_indicator_constr(
-  Constr const& implicant,
-  Constr const& implicand,
-  std::optional<std::string> const& name
+  Constr const& implicant, Constr const& implicand, std::optional<std::string> const& name
 )
 {
   return std::make_shared<ScipIndicatorConstr>(implicant, implicand, name);
@@ -156,10 +159,9 @@ void ScipSolver::set_objective(Solver::Sense const& sense, Expr const& e)
       SCIP_CALL_EXC(SCIPchgVarObj(p_env, p_scip_var, coeffs[i]));
     }
   }
-  else
-  if (e.is_quadratic())
+  else if (e.is_quadratic())
   {
-    // SCIP does not support non-linear objective functions directly. 
+    // SCIP does not support non-linear objective functions directly.
     // Reformulation using an auxilliary variable and a non-linear constraint:
 
     p_aux_obj_var = new Var(e.solver(), Var::Type::Continuous);
@@ -171,9 +173,8 @@ void ScipSolver::set_objective(Solver::Sense const& sense, Expr const& e)
   else
     assert(false);
 
-	SCIP_OBJSENSE scip_sense = sense == Solver::Sense::Maximize
-    ? SCIP_OBJSENSE_MAXIMIZE
-    : SCIP_OBJSENSE_MINIMIZE;
+  SCIP_OBJSENSE scip_sense =
+    sense == Solver::Sense::Maximize ? SCIP_OBJSENSE_MAXIMIZE : SCIP_OBJSENSE_MINIMIZE;
 
   SCIP_CALL_EXC(SCIPsetObjsense(p_env, scip_sense));
 }
@@ -210,7 +211,7 @@ void ScipSolver::add(Constr const& constr)
     throw std::logic_error("Attempt to post the same constraint twice.");
   }
 
-  if(SCIPgetStage(p_env) == SCIP_STAGE_SOLVED)
+  if (SCIPgetStage(p_env) == SCIP_STAGE_SOLVED)
     setup_reoptimization();
 
   SCIP_CONS* p_constr = as_scip_constr(constr);
@@ -249,7 +250,7 @@ bool ScipSolver::supports_indicator_constraint(IndicatorConstr const& constr) co
   // Scip indicator constraints require a linear implicand.
   if (!implicand.expr().is_linear())
     return false;
-  
+
   return true;
 }
 
@@ -257,7 +258,7 @@ bool ScipSolver::supports_indicator_constraint(IndicatorConstr const& constr) co
 void ScipSolver::add(IndicatorConstr const& constr)
 {
   auto const& constr_impl = static_cast<ScipIndicatorConstr const&>(*constr.p_impl);
-  
+
   if (constr_impl.p_constr_1 != nullptr)
   {
     std::logic_error("Attempt to post the same constraint twice.");
@@ -269,7 +270,7 @@ void ScipSolver::add(IndicatorConstr const& constr)
       "Scip does not support this indicator constraint. Try .reformulation()."
     );
 
-  if(SCIPgetStage(p_env) == SCIP_STAGE_SOLVED)
+  if (SCIPgetStage(p_env) == SCIP_STAGE_SOLVED)
     setup_reoptimization();
 
   auto const& implicant = constr.implicant();
@@ -290,9 +291,9 @@ void ScipSolver::add(IndicatorConstr const& constr)
 
   double c = -implicant_linear_coeffs[0] * implicant.expr().constant();
   assert(c == 0 or c == 1);
-  int bin_val = (int) c;
-  SCIP_VAR* p_bin_var
-    = static_cast<ScipVar const&>(*implicant_linear_vars[0].p_impl).p_var;
+  int bin_val = (int)c;
+  SCIP_VAR* p_bin_var =
+    static_cast<ScipVar const&>(*implicant_linear_vars[0].p_impl).p_var;
 
   // check whether we need the negated variable
   if (bin_val == 0)
@@ -359,9 +360,9 @@ void ScipSolver::add(IndicatorConstr const& constr)
 
 void ScipSolver::remove(Constr const& constr)
 {
-  if(SCIPgetStage(p_env) == SCIP_STAGE_SOLVED)
+  if (SCIPgetStage(p_env) == SCIP_STAGE_SOLVED)
     SCIP_CALL_EXC(SCIPfreeTransform(p_env));
- 
+
   auto p_scip_constr = static_cast<ScipConstr const&>(*constr.p_impl).p_constr;
   SCIP_CALL_EXC(SCIPdelCons(p_env, p_scip_constr));
 }
@@ -423,7 +424,7 @@ void ScipSolver::set_verbose(bool value)
 
 void ScipSolver::set_feasibility_tolerance(double value)
 {
-  SCIP_CALL_EXC(SCIPsetRealParam(p_env, "numerics/feastol", value));	
+  SCIP_CALL_EXC(SCIPsetRealParam(p_env, "numerics/feastol", value));
 }
 
 void ScipSolver::set_int_feasibility_tolerance(double value)
@@ -435,6 +436,11 @@ void ScipSolver::set_epsilon(double value)
 {
   SCIP_CALL_EXC(SCIPsetRealParam(p_env, "numerics/epsilon", value));
   SCIP_CALL_EXC(SCIPsetRealParam(p_env, "numerics/sumepsilon", value));
+}
+
+void ScipSolver::set_numeric_focus(int /*focus*/)
+{
+  throw std::logic_error("SCIP does not support numeric focus.");
 }
 
 void ScipSolver::set_nr_threads(std::size_t nr_threads)
@@ -488,7 +494,7 @@ void ScipSolver::set_stopper(std::function<bool()> const& /*stopper*/)
 
 void ScipSolver::dump(std::string const& filename) const
 {
-  SCIP_CALL_EXC(SCIPwriteOrigProblem(p_env, filename.c_str(), NULL, false));	
+  SCIP_CALL_EXC(SCIPwriteOrigProblem(p_env, filename.c_str(), NULL, false));
 }
 
 bool ScipSolver::is_in_callback() const
@@ -515,23 +521,25 @@ void ScipSolver::add_warm_start(PartialSolution const& partial_solution)
 
 void ScipSolver::set_reoptimizing(bool value)
 {
-  SCIP_CALL_EXC(SCIPenableReoptimization(p_env, value)); 
-}	
+  SCIP_CALL_EXC(SCIPenableReoptimization(p_env, value));
+}
 
 void ScipSolver::setup_reoptimization()
 {
-  //SCIP_CALL_EXC(SCIPfreeReoptSolve(p_env));
+  // SCIP_CALL_EXC(SCIPfreeReoptSolve(p_env));
   SCIP_CALL_EXC(SCIPfreeTransform(p_env));
 }
 
 namespace detail {
 
-ScipCurrentStateHandle::ScipCurrentStateHandle(ScipSolver& solver, SCIP_SOL* ap_sol) : 
-  m_solver(solver), p_sol(ap_sol), m_active(false) 
+ScipCurrentStateHandle::ScipCurrentStateHandle(ScipSolver& solver, SCIP_SOL* ap_sol) :
+  m_solver(solver),
+  p_sol(ap_sol),
+  m_active(false)
 {}
-  
+
 double ScipCurrentStateHandle::value(IVar const& var) const
-{ 
+{
   auto p_env = m_solver.p_env;
   auto p_var = static_cast<ScipVar const&>(var).p_var;
   return SCIPgetSolVal(p_env, p_sol, p_var);
@@ -554,10 +562,10 @@ void ScipCurrentStateHandle::add_lazy(Constr const& constr)
   constr_impl.p_constr = p_constr;
 }
 
-} // namespace detail
+}  // namespace detail
 
 
-struct ScipConstraintHandler: scip::ObjConshdlr
+struct ScipConstraintHandler : scip::ObjConshdlr
 {
   static std::size_t nr_instances;
   std::string make_new_name()
@@ -570,33 +578,45 @@ struct ScipConstraintHandler: scip::ObjConshdlr
     LazyConstrHandler const& constr_hdlr,
     int enforcing_priority,
     int checking_priority
-  ) : 
+  ) :
     scip::ObjConshdlr(
       solver.p_env,
-      make_new_name().c_str(),// name
-      "",     // description
-      0,      // priority for separation
-      enforcing_priority,     // priority for constraint enforcing. <0 means integral solutions only
-      checking_priority,     // priority for checking feasibility. <0 means integral solutions only
-      -1,     // frequency for separating cuts; 0 = only at root node
-      0,     // frequency for propagating domains; 0 = only preprocessing propagation
-      0,      // frequency for using all instead of only the useful constraints in separation, propagation and enforcement; -1 = no eager evaluations, 0 = first only
-      -1,     // maximal number of presolving rounds the constraint handler participates in
-      false,   // should separation method be delayed, if other separators found cuts?
-      false,   // should propagation method be delayed, if other propagators found reductions?
-      false,   // should the constraint handler be skipped, if no constraints are available?
-      SCIP_PROPTIMING_AFTERLPNODE, // positions in the node solving loop where propagation method of constraint handlers should be executed
-      SCIP_PRESOLTIMING_MEDIUM     // timing mask of the constraint handler's presolving method
+      make_new_name().c_str(),  // name
+      "",                       // description
+      0,                        // priority for separation
+      enforcing_priority,       // priority for constraint enforcing. <0 means integral
+                                // solutions only
+      checking_priority,        // priority for checking feasibility. <0 means integral
+                                // solutions only
+      -1,                       // frequency for separating cuts; 0 = only at root node
+      0,  // frequency for propagating domains; 0 = only preprocessing propagation
+      0,  // frequency for using all instead of only the useful constraints in separation,
+          // propagation and enforcement; -1 = no eager evaluations, 0 = first only
+      -1,  // maximal number of presolving rounds the constraint handler participates in
+      false,  // should separation method be delayed, if other separators found cuts?
+      false,  // should propagation method be delayed, if other propagators found
+              // reductions?
+      false,  // should the constraint handler be skipped, if no constraints are
+              // available?
+      SCIP_PROPTIMING_AFTERLPNODE,  // positions in the node solving loop where
+                                    // propagation method of constraint handlers should be
+                                    // executed
+      SCIP_PRESOLTIMING_MEDIUM      // timing mask of the constraint handler's presolving
+                                    // method
     ),
     m_solver(solver),
     m_constr_hdlr(constr_hdlr)
-    {}
+  {}
 
-  struct CurrentStateHandlerGuard {
-    CurrentStateHandlerGuard(ScipSolver& solver, SCIP_SOL* p_sol) : m_solver(solver) {
-      m_solver.p_current_state_handler = std::make_unique<detail::ScipCurrentStateHandle>(m_solver, p_sol);
+  struct CurrentStateHandlerGuard
+  {
+    CurrentStateHandlerGuard(ScipSolver& solver, SCIP_SOL* p_sol) : m_solver(solver)
+    {
+      m_solver.p_current_state_handler =
+        std::make_unique<detail::ScipCurrentStateHandle>(m_solver, p_sol);
     }
-    ~CurrentStateHandlerGuard() {
+    ~CurrentStateHandlerGuard()
+    {
       m_solver.p_current_state_handler.reset();
     }
     ScipSolver& m_solver;
@@ -635,18 +655,21 @@ struct ScipConstraintHandler: scip::ObjConshdlr
       *result = SCIP_FEASIBLE;
     else
       *result = SCIP_INFEASIBLE;
-    return SCIP_OKAY;    
+    return SCIP_OKAY;
   }
 
   SCIP_DECL_CONSLOCK(scip_lock)
   {
     if (m_solver.m_destroying)
-      return SCIP_OKAY; // For some reason SCIP is calling this method from its destructor...
+      return SCIP_OKAY;  // For some reason SCIP is calling this method from its
+                         // destructor...
     CurrentStateHandlerGuard guard(m_solver, nullptr);
-    for (auto const& v: m_constr_hdlr.depends())
+    for (auto const& v : m_constr_hdlr.depends())
     {
       auto p_var = static_cast<ScipVar const&>(*v.p_impl).p_var;
-      SCIP_CALL_EXC(SCIPaddVarLocks(scip, p_var, nlocksneg + nlockspos, nlocksneg + nlockspos));
+      SCIP_CALL_EXC(
+        SCIPaddVarLocks(scip, p_var, nlocksneg + nlockspos, nlocksneg + nlockspos)
+      );
     }
     return SCIP_OKAY;
   }
@@ -657,7 +680,9 @@ struct ScipConstraintHandler: scip::ObjConshdlr
 
 std::size_t ScipConstraintHandler::nr_instances = 0;
 
-void ScipSolver::add_lazy_constr_handler(LazyConstrHandler const& constr_hdlr, bool at_integral_nodes_only)
+void ScipSolver::add_lazy_constr_handler(
+  LazyConstrHandler const& constr_hdlr, bool at_integral_nodes_only
+)
 {
   ScipConstraintHandler* p_scip_conshdlr;
   if (at_integral_nodes_only)
@@ -670,10 +695,7 @@ void ScipSolver::add_lazy_constr_handler(LazyConstrHandler const& constr_hdlr, b
 
 std::string ScipSolver::backend_info()
 {
-  return fmt::format(
-    "SCIP {}",
-    SCIP_VERSION/100.0
-  );
+  return fmt::format("SCIP {}", SCIP_VERSION / 100.0);
 }
 
 bool ScipSolver::is_available()
