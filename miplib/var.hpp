@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <memory>
 #include <functional>
+#include <memory>
 #include <optional>
 
 #include <boost/container_hash/hash.hpp>
@@ -30,6 +30,7 @@ struct Var
   Var(Solver const& solver, Var::Type const& type, std::string const& name);
 
   Var(Var const& v) = default;
+  Var& operator=(Var const& v) = default;
 
   bool is_same(Var const& v1) const;
 
@@ -42,7 +43,8 @@ struct Var
 
   double value() const;
 
-  template<class T> T value_as() const;
+  template<class T>
+  T value_as() const;
 
   Type type() const;
 
@@ -64,7 +66,7 @@ struct Var
   friend struct std::less<Var>;
   friend struct GurobiSolver;
   friend struct ScipSolver;
-  friend struct LpsolveSolver;  
+  friend struct LpsolveSolver;
   friend struct ScipCurrentStateHandle;
   friend struct ScipConstraintHandler;
   friend struct GurobiCurrentStateHandle;
@@ -78,7 +80,7 @@ T Var::value_as() const
     return T(std::round(value()));
   }
   else
-  return T(value());
+    return T(value());
 }
 
 std::ostream& operator<<(std::ostream& os, Var const& v);
@@ -155,4 +157,3 @@ struct hash<miplib::Var>
   }
 };
 }  // namespace boost
-

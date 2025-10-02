@@ -119,6 +119,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC" )
 
 set(COMPILE_FLAGS -Werror -Wall -Wno-sign-compare -Wextra)
 
+# Clang 19 compatibility: Disable warnings for deprecated features in external libraries (Boost)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  list(APPEND COMPILE_FLAGS -Wno-deprecated-declarations)
+endif()
+
 target_compile_options(${PROJECT_NAME} PUBLIC ${COMPILE_FLAGS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
