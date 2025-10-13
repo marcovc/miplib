@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-tag="marcovc/miplib-backends:1.2.0"
+tag="mvcorreia/miplib-backends:1.3.0"
 
 # Build and tag image
 docker build --pull -t $tag -f docker/Dockerfile .

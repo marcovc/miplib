@@ -3,6 +3,7 @@
 #include "solver.hpp"
 
 #include <fmt/ostream.h>
+#include <set>
 
 namespace miplib {
 namespace detail {
@@ -79,7 +80,7 @@ ExprImpl& ExprImpl::operator+=(ExprImpl const& e)
   m_constant += e.m_constant;
 
   // add linear term coefficients
-  for (auto& [v, c]: e.m_linear)
+  for (auto& [v, c] : e.m_linear)
   {
     auto mit = m_linear.find(v);
     if (mit == m_linear.end())
@@ -97,7 +98,7 @@ ExprImpl& ExprImpl::operator+=(ExprImpl const& e)
   }
 
   // add quad term coefficients
-  for (auto& [v1v2, c]: e.m_quad)
+  for (auto& [v1v2, c] : e.m_quad)
   {
     auto mit = m_quad.find(v1v2);
     if (mit == m_quad.end())
@@ -146,9 +147,15 @@ ExprImpl& ExprImpl::operator*=(double c)
     return *this;
   }
   // multiply by quad coeffs
-  for (auto& [v1v2, c1]: m_quad) { c1 *= c; }
+  for (auto& [v1v2, c1] : m_quad)
+  {
+    c1 *= c;
+  }
   // multiply by linear coeffs
-  for (auto& [v1, c1]: m_linear) { c1 *= c; }
+  for (auto& [v1, c1] : m_linear)
+  {
+    c1 *= c;
+  }
   // multiply by const coeffs
   m_constant *= c;
   return *this;
@@ -167,10 +174,8 @@ ExprImpl& ExprImpl::operator*=(ExprImpl const& e)
       fmt::format("Attempt to create quartic expression {} * {}.", *this, e)
     );
   }
-  if (
-    (!m_quad.empty() and !e.m_linear.empty()) or 
-    (!m_linear.empty() and !e.m_quad.empty())
-  )
+  if ((!m_quad.empty() and !e.m_linear.empty()) or
+      (!m_linear.empty() and !e.m_quad.empty()))
   {
     throw std::logic_error(
       fmt::format("Attempt to create cubic expression {} * {}.", *this, e)
@@ -185,7 +190,7 @@ ExprImpl& ExprImpl::operator*=(ExprImpl const& e)
   *this *= e.m_constant;
 
   // multiply original constant with linear terms of e
-  for (auto const& [v1, c1]: e.m_linear)
+  for (auto const& [v1, c1] : e.m_linear)
   {
     auto mit = m_linear.find(v1);
     if (mit == m_linear.end())
@@ -204,7 +209,7 @@ ExprImpl& ExprImpl::operator*=(ExprImpl const& e)
   }
 
   // multiply original constant with quad terms of e
-  for (auto const& [v1v2, c1]: e.m_quad)
+  for (auto const& [v1v2, c1] : e.m_quad)
   {
     auto mit = m_quad.find(v1v2);
     if (mit == m_quad.end())
@@ -223,8 +228,8 @@ ExprImpl& ExprImpl::operator*=(ExprImpl const& e)
   }
 
   // multiply original linear terms with linear terms of e
-  for (auto const& [v1, c1]: linear)
-    for (auto const& [v2, c2]: e.m_linear)
+  for (auto const& [v1, c1] : linear)
+    for (auto const& [v2, c2] : e.m_linear)
     {
       auto v1v2 = ordered({v1, v2});
       auto mit = m_quad.find(v1v2);
@@ -270,7 +275,7 @@ ExprImpl& ExprImpl::div_by_nonzero(Var const& v)
       );
   }
 
-  for (auto it = m_quad.begin(); it != m_quad.end(); )
+  for (auto it = m_quad.begin(); it != m_quad.end();)
     if (it->first.first.is_same(v))
     {
       auto lit = m_linear.find(it->first.second);
@@ -281,8 +286,7 @@ ExprImpl& ExprImpl::div_by_nonzero(Var const& v)
 
       m_quad.erase(it++);
     }
-    else
-    if (it->first.second.is_same(v))
+    else if (it->first.second.is_same(v))
     {
       auto lit = m_linear.find(it->first.first);
       if (lit == m_linear.end())
@@ -306,7 +310,7 @@ std::ostream& operator<<(std::ostream& os, ExprImpl const& e)
   // sort quad terms by id (for tests)
   std::vector<std::pair<VarPair, double>> quad(e.m_quad.begin(), e.m_quad.end());
 
-  for (auto& [vp, c]: quad) vp = ordered_by_name(vp);
+  for (auto& [vp, c] : quad) vp = ordered_by_name(vp);
 
   std::sort(quad.begin(), quad.end(), [](auto const& vpc1, auto const& vpc2) {
     if (vpc1.first.first.id() != vpc2.first.first.id())
@@ -337,13 +341,13 @@ std::ostream& operator<<(std::ostream& os, ExprImpl const& e)
     first_term = false;
   };
 
-  for (auto const& [v1v2, c]: quad)
+  for (auto const& [v1v2, c] : quad)
   {
     auto const& [v1, v2] = v1v2;
     print_coefficient(c);
     os << v1 << " " << v2;
   }
-  for (auto const& [v, c]: linear)
+  for (auto const& [v, c] : linear)
   {
     print_coefficient(c);
     os << v;
@@ -401,7 +405,8 @@ bool Expr::must_be_binary() const
   }
 }
 
-static bool is_integer(double c) {
+static bool is_integer(double c)
+{
   return int(c) == c;
 }
 
@@ -410,23 +415,23 @@ bool Expr::must_be_integer() const
   if (!is_integer(constant()))
     return false;
 
-  for (auto const& coeff: linear_coeffs())
+  for (auto const& coeff : linear_coeffs())
     if (!is_integer(coeff))
       return false;
 
-  for (auto const& var: linear_vars())
+  for (auto const& var : linear_vars())
     if (var.type() != Var::Type::Binary and var.type() != Var::Type::Integer)
       return false;
 
-  for (auto const& coeff: quad_coeffs())
+  for (auto const& coeff : quad_coeffs())
     if (!is_integer(coeff))
       return false;
 
-  for (auto const& var: quad_vars_1())
+  for (auto const& var : quad_vars_1())
     if (var.type() != Var::Type::Binary and var.type() != Var::Type::Integer)
       return false;
 
-  for (auto const& var: quad_vars_2())
+  for (auto const& var : quad_vars_2())
     if (var.type() != Var::Type::Binary and var.type() != Var::Type::Integer)
       return false;
 
@@ -505,7 +510,9 @@ std::vector<Var> Expr::quad_vars_2() const
 }
 
 // Returns the lower and upper bounds of a term.
-static std::pair<double, double> linear_term_bounds(Var const& v, double coeff, bool ignore_inf_var_bounds)
+static std::pair<double, double> linear_term_bounds(
+  Var const& v, double coeff, bool ignore_inf_var_bounds
+)
 {
   auto var_lb = v.lb();
   auto var_ub = v.ub();
@@ -521,8 +528,7 @@ static std::pair<double, double> linear_term_bounds(Var const& v, double coeff, 
 
   if (coeff > 0)
     return std::make_pair(std::max(-inf, coeff * var_lb), std::min(inf, coeff * var_ub));
-  else
-  if (coeff < 0)
+  else if (coeff < 0)
     return std::make_pair(std::max(-inf, coeff * var_ub), std::min(inf, coeff * var_lb));
   else
     return std::make_pair(0, 0);
@@ -532,9 +538,11 @@ static std::pair<double, double> linear_term_bounds(Var const& v, double coeff, 
 // Returns the lower and upper bounds of a linear expression.
 std::pair<double, double> Expr::bounds() const
 {
-  if (!is_linear()) 
+  if (!is_linear())
     throw std::logic_error(
-      fmt::format("Querying bounds of a nonlinear expression is not implemented yet: {}.", *this)
+      fmt::format(
+        "Querying bounds of a nonlinear expression is not implemented yet: {}.", *this
+      )
     );
 
   auto const lin_coeffs = linear_coeffs();
@@ -564,12 +572,14 @@ std::pair<double, double> Expr::numerical_range(bool ignore_inf_var_bounds) cons
   auto lin_vars = linear_vars();
 
   double lb = std::abs(constant());
-  if (lb == 0) lb = inf;
+  if (lb == 0)
+    lb = inf;
   double ub = std::abs(constant());
 
   for (std::size_t i = 0; i < lin_coeffs.size(); ++i)
   {
-    auto const [term_lb, term_ub] = linear_term_bounds(lin_vars[i], lin_coeffs[i], ignore_inf_var_bounds);
+    auto const [term_lb, term_ub] =
+      linear_term_bounds(lin_vars[i], lin_coeffs[i], ignore_inf_var_bounds);
     double max_abs = std::max(std::abs(term_lb), std::abs(term_ub));
     lb = std::min(lb, max_abs);
     ub = std::max(ub, max_abs);
@@ -636,7 +646,8 @@ Expr Expr::operator/(Expr const& e) const
   if (!e.is_constant())
   {
     throw std::logic_error(
-      fmt::format("Attempt to divide non-constant expression {} / {}.", *this, e));
+      fmt::format("Attempt to divide non-constant expression {} / {}.", *this, e)
+    );
   }
   return (*this) / e.constant();
 }
@@ -652,33 +663,30 @@ static double interval_prod_lb(
   if (lb1 >= 0 and lb2 >= 0)
     return lb1 * lb2;
   else
-  // N * N
-  if (ub1 <= 0 and ub2 <= 0)
-    return ub1 * ub2;
-  else
-  if (is_same)
-    return 0;
-  else
-  {
-    return std::min(lb1 * ub2, ub1 * lb2);
-  }
+    // N * N
+    if (ub1 <= 0 and ub2 <= 0)
+      return ub1 * ub2;
+    else if (is_same)
+      return 0;
+    else
+    {
+      return std::min(lb1 * ub2, ub1 * lb2);
+    }
 }
 
 
 // computes the upper bound of the product of two intervals using interval arithmetic
-static double interval_prod_ub(
-  double lb1, double ub1, double lb2, double ub2
-)
+static double interval_prod_ub(double lb1, double ub1, double lb2, double ub2)
 {
   // P * P
   if (lb1 >= 0 and lb2 >= 0)
     return ub1 * ub2;
   else
-  // N * N
-  if (ub1 <= 0 and ub2 <= 0)
-    return lb1 * lb2;
-  else
-    return std::max(lb1 * lb2, ub1 * ub2);
+    // N * N
+    if (ub1 <= 0 and ub2 <= 0)
+      return lb1 * lb2;
+    else
+      return std::max(lb1 * lb2, ub1 * ub2);
 }
 
 
@@ -686,7 +694,7 @@ double Expr::lb() const
 {
   if (is_constant())
     return value();
-    
+
   double infinity = solver().infinity();
 
   double r = constant();
@@ -702,8 +710,7 @@ double Expr::lb() const
       else
         r += lc[i] * lv[i].lb();
     }
-    else
-    if (lc[i] < 0)
+    else if (lc[i] < 0)
     {
       if (lv[i].ub() == infinity)
         return -infinity;
@@ -719,19 +726,15 @@ double Expr::lb() const
     if (qc[i] > 0)
     {
       double lb = interval_prod_lb(
-        qv1[i].lb(), qv1[i].ub(), qv2[i].lb(), qv2[i].ub(),
-        qv1[i].is_same(qv2[i])
-      );      
+        qv1[i].lb(), qv1[i].ub(), qv2[i].lb(), qv2[i].ub(), qv1[i].is_same(qv2[i])
+      );
       if (lb <= -infinity)
         return -infinity;
       r += qc[i] * lb;
     }
-    else
-    if (qc[i] < 0)
+    else if (qc[i] < 0)
     {
-      double ub = interval_prod_ub(
-        qv1[i].lb(), qv1[i].ub(), qv2[i].lb(), qv2[i].ub()
-      );      
+      double ub = interval_prod_ub(qv1[i].lb(), qv1[i].ub(), qv2[i].lb(), qv2[i].ub());
       if (ub >= infinity)
         return -infinity;
       r += qc[i] * ub;
@@ -752,8 +755,7 @@ double Expr::value() const
   // linear part
   auto const lv = linear_vars();
   auto const lc = linear_coeffs();
-  for (std::size_t i = 0; i < lc.size(); ++i)
-    r += lc[i] * lv[i].value();
+  for (std::size_t i = 0; i < lc.size(); ++i) r += lc[i] * lv[i].value();
 
   // quadratic part
   auto const qv1 = quad_vars_1();
@@ -762,15 +764,14 @@ double Expr::value() const
   for (std::size_t i = 0; i < qc.size(); ++i)
     r += qc[i] * qv1[i].value() * qv2[i].value();
 
-  return r;  
+  return r;
 }
 
 std::vector<Var> Expr::vars() const
 {
   std::set<Var> r;
-  for (auto const& [v, c]: p_impl->m_linear)
-    r.insert(v);
-  for (auto const& [vv, c]: p_impl->m_quad)
+  for (auto const& [v, c] : p_impl->m_linear) r.insert(v);
+  for (auto const& [vv, c] : p_impl->m_quad)
   {
     r.insert(vv.first);
     r.insert(vv.second);

@@ -8,11 +8,12 @@
 # Required in order to use fast HSL code
 # Install SCIP solver (from source)
 
-ARG SCIP_VERSION=8.0.4
+# was 8.0.4
+ARG SCIP_VERSION=9.2.3 
 ARG IPOPT_VERSION=3.14.4
 
 #FROM ubuntu:focal as COMPILE
-FROM debian:bookworm-slim as COMPILE
+FROM debian:trixie-slim as COMPILE
 
 ARG SCIP_VERSION
 ARG IPOPT_VERSION
@@ -61,7 +62,7 @@ RUN wget https://scip.zib.de/download/release/scipoptsuite-${SCIP_VERSION}.tgz -
 
 # Runtime image
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 

@@ -8,11 +8,10 @@ Constr::Constr(
   Solver const& solver,
   Constr::Type const& type,
   Expr const& e,
-  std::optional<std::string> const& name):
-  p_impl(solver.p_impl->create_constr(type, e, name)
-)
-{
-}
+  std::optional<std::string> const& name
+) :
+  p_impl(solver.p_impl->create_constr(type, e, name))
+{}
 
 Expr Constr::expr() const
 {
@@ -34,11 +33,11 @@ bool Constr::must_be_satisfied() const
   auto const& e = expr();
   double lb = e.lb();
   double ub = e.ub();
-  if (ub > 0) // FIXME: use eps
+  if (ub > 0)  // FIXME: use eps
     return false;
   if (type() == Type::LessEqual)
     return true;
-  if (lb < 0) // FIXME: use eps
+  if (lb < 0)  // FIXME: use eps
     return false;
   return true;
 }
@@ -48,11 +47,11 @@ bool Constr::must_be_violated() const
   auto const& e = expr();
   double lb = e.lb();
   double ub = e.ub();
-  if (lb > 0) // FIXME: use eps
+  if (lb > 0)  // FIXME: use eps
     return true;
-  if (ub < 0 and type() == Type::Equal) // FIXME: use eps
+  if (ub < 0 and type() == Type::Equal)  // FIXME: use eps
     return true;
-  return false;  
+  return false;
 }
 
 // If the truth value of the constraint can be captured as
@@ -66,7 +65,7 @@ bool Constr::is_reifiable() const
     return false;
   if (!e.must_be_integer())
     return false;
-  if (e.lb() * e.ub() < 0) // FIXME: use eps
+  if (e.lb() * e.ub() < 0)  // FIXME: use eps
     return false;
   return true;
 }
@@ -161,7 +160,7 @@ IndicatorConstr::IndicatorConstr(
   Constr const& implicant,
   Constr const& implicand,
   std::optional<std::string> const& name
-):
+) :
   p_impl(solver.p_impl->create_indicator_constr(implicant, implicand, name))
 {}
 
@@ -203,27 +202,25 @@ IndicatorConstr operator<<(Constr const& implicand, Constr const& implicant)
 
 namespace detail {
 std::shared_ptr<detail::IIndicatorConstr> create_reformulatable_indicator_constr(
-  Constr const& implicant,
-  Constr const& implicand,
-  std::optional<std::string> const& name
+  Constr const& implicant, Constr const& implicand, std::optional<std::string> const& name
 )
 {
   return std::make_shared<IIndicatorConstr>(implicant, implicand, name);
 }
-} // namespace detail
+}  // namespace detail
 
 bool IndicatorConstr::has_reformulation() const
 {
   if (!implicant().is_reifiable())
     return false;
-  auto const& solver = implicand().expr().solver();
+  auto solver = implicand().expr().solver();
 
   if (implicand().expr().ub() == solver.infinity())
     return false;
-  
+
   if (implicand().type() == Constr::Type::LessEqual)
     return true;
-  
+
   assert(implicand().type() == Constr::Type::Equal);
   if (implicand().expr().lb() == -solver.infinity())
     return false;
@@ -239,7 +236,7 @@ std::vector<Constr> IndicatorConstr::reformulation() const
       "Attempt to reformulate indicator constraint with non reifiable implicant."
     );
 
-  auto const& solver = implicand().expr().solver();
+  auto solver = implicand().expr().solver();
 
   double ub = implicand().expr().ub();
   if (ub == solver.infinity())
@@ -254,7 +251,7 @@ std::vector<Constr> IndicatorConstr::reformulation() const
   // <-> LinExpr - ub(LinExpr) * (1-z) <= 0
 
   // add ub reformulation if not redundant
-  if (ub > 0) 
+  if (ub > 0)
   {
     auto c = implicand().expr() <= ub * implicant().reified();
     if (name())
@@ -279,7 +276,7 @@ std::vector<Constr> IndicatorConstr::reformulation() const
   // <-> LinExpr - ub(LinExpr) * (1-z) <= 0 /\ -LinExpr - ub(-LinExpr) * (1-z) <= 0
   // <-> LinExpr - ub(LinExpr) * (1-z) <= 0 /\ -LinExpr + lb(LinExpr) * (1-z) <= 0
 
-  if (lb < 0) 
+  if (lb < 0)
   {
     auto c = lb * implicant().reified() <= implicand().expr();
     if (name())
@@ -293,8 +290,7 @@ std::vector<Constr> IndicatorConstr::reformulation() const
 std::vector<Constr> IndicatorConstr::scale(double skip_lb, double skip_ub) const
 {
   std::vector<Constr> r;
-  for (auto const& ctr : reformulation())
-    r.push_back(ctr.scale(skip_lb, skip_ub));
+  for (auto const& ctr : reformulation()) r.push_back(ctr.scale(skip_lb, skip_ub));
   return r;
 }
 
