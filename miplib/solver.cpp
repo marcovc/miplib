@@ -12,6 +12,8 @@
   #include "lpsolve/solver.hpp"
 #endif
 
+#include <fmt/format.h>
+
 namespace miplib {
 
 Solver::Solver(Solver::BackendRequest backend_request, bool verbose) :
@@ -107,7 +109,12 @@ Solver::Sense Solver::get_objective_sense() const
 void Solver::add(Constr const& constr, bool scale)
 {
   if (constr.must_be_violated())
-    throw std::logic_error("Attempt to create a constraint that is trivially unsat.");
+    throw std::logic_error(
+      fmt::format(
+        "Attempt to create a constraint that is trivially unsat: {}",
+        constr.name().value_or("<unnamed>")
+      )
+    );
 
   if (scale or m_constraint_autoscale)
     p_impl->add(constr.scale());
@@ -117,12 +124,14 @@ void Solver::add(Constr const& constr, bool scale)
 
 void Solver::add(IndicatorConstr const& constr, bool scale)
 {
-  if (p_impl->m_indicator_constraint_policy ==
-        Solver::IndicatorConstraintPolicy::Reformulate or
-      (!supports_indicator_constraint(constr) and
-       p_impl->m_indicator_constraint_policy ==
-         Solver::IndicatorConstraintPolicy::ReformulateIfUnsupported) or
-      scale)
+  if (
+    p_impl->m_indicator_constraint_policy ==
+      Solver::IndicatorConstraintPolicy::Reformulate or
+    (!supports_indicator_constraint(constr) and
+     p_impl->m_indicator_constraint_policy ==
+       Solver::IndicatorConstraintPolicy::ReformulateIfUnsupported) or
+    scale
+  )
   {
     for (auto const& c : constr.reformulation()) add(c, scale);
   }
