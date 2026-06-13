@@ -57,6 +57,7 @@ struct Solver
   void add_lazy_constr_handler(
     LazyConstrHandler const& constr_handler, bool at_integral_only
   );
+  void remove_lazy_constr_handler(LazyConstrHandler const& constr_handler);
 
   void set_non_convex_policy(NonConvexPolicy policy);
   void set_indicator_constraint_policy(IndicatorConstraintPolicy policy);
@@ -108,6 +109,8 @@ struct Solver
 
   // Used to build initial feasible solution.
   void add_warm_start(PartialSolution const& partial_solution);
+
+  void remove_warm_starts();
 
   // SCIP requires to know in advance if the problem is to be solved
   // multiple times.
@@ -174,6 +177,8 @@ struct ISolver
   virtual void add_lazy_constr_handler(
     LazyConstrHandler const& constr, bool at_integral_only
   ) = 0;
+  virtual void remove_lazy_constr_handler(LazyConstrHandler const& constr) = 0;
+
   virtual std::pair<Solver::Result, bool> solve() = 0;
   virtual void set_non_convex_policy(Solver::NonConvexPolicy policy) = 0;
   virtual void set_indicator_constraint_policy(Solver::IndicatorConstraintPolicy policy);
@@ -206,6 +211,7 @@ struct ISolver
   virtual void dump(std::string const& filename) const = 0;
 
   virtual void add_warm_start(PartialSolution const& partial_solution) = 0;
+  virtual void remove_warm_starts() = 0;
 
   virtual void set_reoptimizing(bool) = 0;
   virtual void setup_reoptimization() = 0;

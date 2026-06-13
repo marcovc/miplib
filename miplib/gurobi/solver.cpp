@@ -540,6 +540,15 @@ void GurobiSolver::add_warm_start(PartialSolution const& partial_solution)
   }
 }
 
+void GurobiSolver::remove_warm_starts()
+{
+  if (is_in_callback())
+    throw std::logic_error("Cannot clear warm starts from callback.");
+
+  model.set(GRB_IntAttr_NumStart, 0);
+  set_pending_update();
+}
+
 void GurobiSolver::set_reoptimizing(bool)
 {
   // GurobiSolver does not require explicitely enabling/disabling reoptimization.
@@ -570,6 +579,18 @@ void GurobiCurrentStateHandle::add_constr_handler(
     m_constr_hdlrs.push_back(constr_hdlr);
 }
 
+void GurobiCurrentStateHandle::remove_constr_handler(LazyConstrHandler const& constr_hdlr)
+{
+  auto remove_from = [&](auto& handlers) {
+    auto it = std::find(handlers.begin(), handlers.end(), constr_hdlr);
+    if (it != handlers.end())
+      handlers.erase(it);
+  };
+
+  remove_from(m_constr_hdlrs);
+  remove_from(m_integral_only_constr_hdlrs);
+}
+
 void GurobiCurrentStateHandle::add_stopper(GurobiStopper const& stopper)
 {
   m_stoppers.push_back(stopper);
@@ -580,10 +601,11 @@ double GurobiCurrentStateHandle::value(IVar const& var) const
   GRBVar grb_var = static_cast<GurobiVar const&>(var).m_var;
   if (where == GRB_CB_MIPSOL or where == GRB_CB_MULTIOBJ)
     return const_cast<GurobiCurrentStateHandle*>(this)->getSolution(grb_var);
-  else if (where == GRB_CB_MIPNODE and
-           const_cast<GurobiCurrentStateHandle*>(this)->getIntInfo(
-             GRB_CB_MIPNODE_STATUS
-           ) == GRB_OPTIMAL)
+  else if (
+    where == GRB_CB_MIPNODE and
+    const_cast<GurobiCurrentStateHandle*>(this)->getIntInfo(GRB_CB_MIPNODE_STATUS) ==
+      GRB_OPTIMAL
+  )
     return const_cast<GurobiCurrentStateHandle*>(this)->getNodeRel(grb_var);
 
   throw std::logic_error("Failure to obtain variable value from current node.");
@@ -612,8 +634,10 @@ void GurobiCurrentStateHandle::callback()
     bool infeasible = false;
 
     // if we are in an integral or non integral node
-    if (where == GRB_CB_MIPSOL or
-        (where == GRB_CB_MIPNODE and getIntInfo(GRB_CB_MIPNODE_STATUS) == GRB_OPTIMAL))
+    if (
+      where == GRB_CB_MIPSOL or
+      (where == GRB_CB_MIPNODE and getIntInfo(GRB_CB_MIPNODE_STATUS) == GRB_OPTIMAL)
+    )
     {
       for (auto& h : m_constr_hdlrs) infeasible |= h.add(infeasible);
     }
@@ -670,6 +694,13 @@ void GurobiSolver::add_lazy_constr_handler(
     model.setCallback(p_callback.get());
   }
   p_callback->add_constr_handler(constr_hdlr, at_integral_only);
+}
+
+void GurobiSolver::remove_lazy_constr_handler(LazyConstrHandler const& constr_hdlr)
+{
+  if (!p_callback)
+    return;
+  p_callback->remove_constr_handler(constr_hdlr);
 }
 
 std::string GurobiSolver::backend_info()

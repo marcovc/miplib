@@ -1,41 +1,54 @@
 #pragma once
 
 #include <memory>
-#include <miplib/var.hpp>
 #include <miplib/constr.hpp>
+#include <miplib/var.hpp>
 
 namespace miplib {
 
 namespace detail {
 struct ICurrentStateHandle
 {
-    virtual double value(IVar const& var) const = 0;
-    virtual void add_lazy(Constr const& constr) = 0;
-    virtual bool is_active() const = 0;
+  virtual double value(IVar const& var) const = 0;
+  virtual void add_lazy(Constr const& constr) = 0;
+  virtual bool is_active() const = 0;
 };
-}
+}  // namespace detail
 
 struct ILazyConstrHandler
 {
   virtual bool is_feasible() = 0;
-  // The argument infeasible is true to indicate if other constraint handlers already 
+  // The argument infeasible is true to indicate if other constraint handlers already
   // added constraints to the current node.
-  // Returns if at least one constraint was added to the model. 
+  // Returns if at least one constraint was added to the model.
   virtual bool add(bool infeasible) = 0;
   virtual std::vector<Var> depends() const = 0;
 };
 
 struct LazyConstrHandler
 {
-  LazyConstrHandler(
-    std::shared_ptr<ILazyConstrHandler> const& ap_impl
-  ) : p_impl(ap_impl) {}
+  LazyConstrHandler(std::shared_ptr<ILazyConstrHandler> const& ap_impl) : p_impl(ap_impl)
+  {}
   LazyConstrHandler(LazyConstrHandler const& s) = default;
 
 
-  std::vector<Var> depends() const { return p_impl->depends(); }
-  bool is_feasible() { return p_impl->is_feasible(); }
-  bool add(bool infeasible) { return p_impl->add(infeasible); }
+  std::vector<Var> depends() const
+  {
+    return p_impl->depends();
+  }
+  bool is_feasible()
+  {
+    return p_impl->is_feasible();
+  }
+  bool add(bool infeasible)
+  {
+    return p_impl->add(infeasible);
+  }
+
+  bool operator==(LazyConstrHandler const& other) const
+  {
+    return p_impl == other.p_impl;
+  }
 
   private:
   std::shared_ptr<ILazyConstrHandler> p_impl;
@@ -66,4 +79,4 @@ struct DefaultLazyConstrHandler : ILazyConstrHandler
   Handler& m_handler;
 };
 
-}
+}  // namespace miplib

@@ -290,6 +290,11 @@ void LpsolveSolver::add_warm_start(PartialSolution const& /*partial_solution*/)
   throw std::logic_error("Lpsolve does not support warm starts.");
 }
 
+void LpsolveSolver::remove_warm_starts()
+{
+  throw std::logic_error("Lpsolve does not support warm starts.");
+}
+
 void LpsolveSolver::set_reoptimizing(bool)
 {
   // Lpsolve does not require explicitely enabling/disabling reoptimization.

@@ -42,6 +42,10 @@ struct LpsolveSolver : detail::ISolver
   {
     throw std::logic_error("Not implemented yet.");
   }
+  void remove_lazy_constr_handler(LazyConstrHandler const& constr_handler)
+  {
+    throw std::logic_error("Not implemented yet.");
+  }
 
   std::pair<Solver::Result, bool> solve();
 
@@ -83,6 +87,7 @@ struct LpsolveSolver : detail::ISolver
   void dump(std::string const& filename) const;
 
   void add_warm_start(PartialSolution const& partial_solution);
+  void remove_warm_starts();
 
   void set_reoptimizing(bool);
   void setup_reoptimization();

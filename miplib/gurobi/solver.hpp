@@ -16,6 +16,7 @@ struct GurobiCurrentStateHandle : GRBCallback, ICurrentStateHandle
   GurobiCurrentStateHandle();
   void add_constr_handler(LazyConstrHandler const& constr_hdlr, bool integral_only);
   void add_stopper(GurobiStopper const& stopper);
+  void remove_constr_handler(LazyConstrHandler const& constr_hdlr);
 
   double value(IVar const& var) const;
   void add_lazy(Constr const& constr);
@@ -71,6 +72,7 @@ struct GurobiSolver : detail::ISolver
   void remove(Constr const& constr);
 
   void add_lazy_constr_handler(LazyConstrHandler const&, bool at_integral_only);
+  void remove_lazy_constr_handler(LazyConstrHandler const& constr_handler);
 
   std::pair<Solver::Result, bool> solve();
 
@@ -113,6 +115,7 @@ struct GurobiSolver : detail::ISolver
   bool is_in_callback() const;
 
   void add_warm_start(PartialSolution const& partial_solution);
+  void remove_warm_starts();
 
   void set_reoptimizing(bool);
   void setup_reoptimization();

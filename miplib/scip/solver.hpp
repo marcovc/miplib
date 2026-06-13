@@ -68,6 +68,7 @@ struct ScipSolver : detail::ISolver
   void add_lazy_constr_handler(
     LazyConstrHandler const& constr, bool at_integral_nodes_only
   );
+  void remove_lazy_constr_handler(LazyConstrHandler const& constr);
 
   std::pair<Solver::Result, bool> solve();
 
@@ -113,6 +114,7 @@ struct ScipSolver : detail::ISolver
   bool is_in_callback() const;
 
   void add_warm_start(PartialSolution const& partial_solution);
+  void remove_warm_starts();
 
   void set_reoptimizing(bool);
   void setup_reoptimization();

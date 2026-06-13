@@ -151,6 +151,11 @@ void Solver::add_lazy_constr_handler(
   p_impl->add_lazy_constr_handler(constr_handler, at_integral_only);
 }
 
+void Solver::remove_lazy_constr_handler(LazyConstrHandler const& constr_handler)
+{
+  p_impl->remove_lazy_constr_handler(constr_handler);
+}
+
 std::pair<Solver::Result, bool> Solver::solve()
 {
   return p_impl->solve();
@@ -340,6 +345,11 @@ void Solver::dump(std::string const& filename) const
 void Solver::add_warm_start(PartialSolution const& partial_solution)
 {
   p_impl->add_warm_start(partial_solution);
+}
+
+void Solver::remove_warm_starts()
+{
+  p_impl->remove_warm_starts();
 }
 
 void Solver::set_reoptimizing(bool value)

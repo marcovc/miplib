@@ -519,6 +519,11 @@ void ScipSolver::add_warm_start(PartialSolution const& partial_solution)
     spdlog::warn("Warm start solution was ignored.");
 }
 
+void ScipSolver::remove_warm_starts()
+{
+  throw std::logic_error("Removing warm starts is not implemented for SCIP yet.");
+}
+
 void ScipSolver::set_reoptimizing(bool value)
 {
   SCIP_CALL_EXC(SCIPenableReoptimization(p_env, value));
@@ -691,6 +696,13 @@ void ScipSolver::add_lazy_constr_handler(
     p_scip_conshdlr = new ScipConstraintHandler(*this, constr_hdlr, 1, 1);
 
   SCIP_CALL_EXC(SCIPincludeObjConshdlr(p_env, p_scip_conshdlr, true));
+}
+
+void ScipSolver::remove_lazy_constr_handler(LazyConstrHandler const& /*constr_hdlr*/)
+{
+  throw std::logic_error(
+    "Removing lazy constraint handlers is not implemented for SCIP yet."
+  );
 }
 
 std::string ScipSolver::backend_info()
