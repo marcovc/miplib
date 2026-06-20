@@ -42,7 +42,7 @@ struct LpsolveSolver : detail::ISolver
   {
     throw std::logic_error("Not implemented yet.");
   }
-  void remove_lazy_constr_handler(LazyConstrHandler const& constr_handler)
+  void remove_lazy_constr_handler(LazyConstrHandler const&)
   {
     throw std::logic_error("Not implemented yet.");
   }
