@@ -4,7 +4,14 @@
 
 namespace miplib {
 
-GurobiVar::GurobiVar(Solver const& solver, GRBVar const& v): m_solver(solver), m_var(v)
+GurobiVar::GurobiVar(
+  Solver const& solver, GRBVar const& v, Var::Type type, double lb, double ub
+) :
+  m_solver(solver),
+  m_var(v),
+  m_cached_type(type),
+  m_cached_lb(lb),
+  m_cached_ub(ub)
 {
   static_cast<GurobiSolver const&>(*m_solver.p_impl).set_pending_update();
 }
@@ -29,19 +36,8 @@ double GurobiVar::value() const
 
 Var::Type GurobiVar::type() const
 {
-  update_solver_if_pending();
-  char vtype = m_var.get(GRB_CharAttr_VType);
-  switch (vtype)
-  {
-    case 'C':
-      return Var::Type::Continuous;
-    case 'B':
-      return Var::Type::Binary;
-    case 'I':
-      return Var::Type::Integer;
-    default:
-      throw std::logic_error("Gurobi variable type not handled yet.");
-  }
+  // Cached — variable type is immutable after creation.
+  return m_cached_type;
 }
 
 std::optional<std::string> GurobiVar::name() const
@@ -66,18 +62,14 @@ void GurobiVar::set_name(std::string const& new_name)
 
 double GurobiVar::lb() const
 {
-  if (type() == Var::Type::Binary)
-    return 0;
-  update_solver_if_pending();
-  return m_var.get(GRB_DoubleAttr_LB);
+  // Cached — kept in sync by set_lb, so no model flush is needed to read it.
+  return m_cached_lb;
 }
 
 double GurobiVar::ub() const
 {
-  if (type() == Var::Type::Binary)
-    return 1;
-  update_solver_if_pending();
-  return m_var.get(GRB_DoubleAttr_UB);
+  // Cached — kept in sync by set_ub, so no model flush is needed to read it.
+  return m_cached_ub;
 }
 
 void GurobiVar::set_lb(double new_lb)
@@ -88,6 +80,7 @@ void GurobiVar::set_lb(double new_lb)
     throw std::logic_error("Operation not allowed within callback.");
 
   m_var.set(GRB_DoubleAttr_LB, new_lb);
+  m_cached_lb = new_lb;
   gurobi_solver.set_pending_update();  
 }
 
@@ -99,6 +92,7 @@ void GurobiVar::set_ub(double new_ub)
     throw std::logic_error("Operation not allowed within callback.");
 
   m_var.set(GRB_DoubleAttr_UB, new_ub);
+  m_cached_ub = new_ub;
   gurobi_solver.set_pending_update();  
 }
 

@@ -25,7 +25,8 @@ static GRBEnv init_env(bool verbose)
 GurobiSolver::GurobiSolver(bool verbose) :
   env(init_env(verbose)),
   model(env),
-  pending_update(false)
+  pending_update(false),
+  m_autoupdate(true)
 {}
 
 void GurobiSolver::set_pending_update() const
@@ -33,12 +34,26 @@ void GurobiSolver::set_pending_update() const
   pending_update = true;
 }
 
-void GurobiSolver::update_if_pending() const
+void GurobiSolver::update_if_pending(bool force) const
 {
   if (!pending_update)
     return;
+  if (!force and !m_autoupdate)
+    return;
   model.update();
   pending_update = false;
+}
+
+void GurobiSolver::set_autoupdate(bool enabled) const
+{
+  m_autoupdate = enabled;
+  if (enabled)
+    update_if_pending(true);
+}
+
+bool GurobiSolver::autoupdate() const
+{
+  return m_autoupdate;
 }
 
 std::shared_ptr<detail::IVar> GurobiSolver::create_var(
@@ -80,7 +95,7 @@ std::shared_ptr<detail::IVar> GurobiSolver::create_var(
   }
 
   GRBVar grb_var = model.addVar(grb_lb, grb_ub, 0.0, grb_var_type, name.value_or(""));
-  return std::make_shared<GurobiVar>(solver, grb_var);
+  return std::make_shared<GurobiVar>(solver, grb_var, type, grb_lb, grb_ub);
 }
 
 static GRBLinExpr as_grb_lin_expr(Expr const& e)

@@ -295,6 +295,16 @@ void LpsolveSolver::remove_warm_starts()
   throw std::logic_error("Lpsolve does not support warm starts.");
 }
 
+void LpsolveSolver::set_autoupdate(bool /*enabled*/) const
+{
+  // Lpsolve has no equivalent lazy-update concept; every mutation is applied immediately.
+}
+
+bool LpsolveSolver::autoupdate() const
+{
+  return true;
+}
+
 void LpsolveSolver::set_reoptimizing(bool)
 {
   // Lpsolve does not require explicitely enabling/disabling reoptimization.

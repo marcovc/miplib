@@ -7,7 +7,7 @@ namespace miplib {
 
 struct GurobiVar : detail::IVar
 {
-  GurobiVar(Solver const& solver, GRBVar const& v);
+  GurobiVar(Solver const& solver, GRBVar const& v, Var::Type type, double lb, double ub);
   virtual ~GurobiVar() {};
 
   void update_solver_if_pending() const;
@@ -33,6 +33,10 @@ struct GurobiVar : detail::IVar
 
   Solver m_solver;
   GRBVar m_var;
+  // Immutable after creation and mirrored bounds, so reads never need a GRBupdatemodel flush.
+  Var::Type m_cached_type;
+  mutable double m_cached_lb;
+  mutable double m_cached_ub;
 };
 
 }  // namespace miplib

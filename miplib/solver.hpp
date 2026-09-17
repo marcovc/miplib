@@ -112,6 +112,11 @@ struct Solver
 
   void remove_warm_starts();
 
+  // Suppress internal model-flush calls until re-enabled or solve() is called.
+  // Backends without this concept (Scip, Lpsolve) ignore it.
+  void set_autoupdate(bool enabled);
+  bool autoupdate() const;
+
   // SCIP requires to know in advance if the problem is to be solved
   // multiple times.
   void set_reoptimizing(bool);
@@ -212,6 +217,9 @@ struct ISolver
 
   virtual void add_warm_start(PartialSolution const& partial_solution) = 0;
   virtual void remove_warm_starts() = 0;
+
+  virtual void set_autoupdate(bool enabled) const = 0;
+  virtual bool autoupdate() const = 0;
 
   virtual void set_reoptimizing(bool) = 0;
   virtual void setup_reoptimization() = 0;

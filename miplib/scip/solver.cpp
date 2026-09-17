@@ -524,6 +524,16 @@ void ScipSolver::remove_warm_starts()
   throw std::logic_error("Removing warm starts is not implemented for SCIP yet.");
 }
 
+void ScipSolver::set_autoupdate(bool /*enabled*/) const
+{
+  // SCIP has no equivalent lazy-update concept; every mutation is applied immediately.
+}
+
+bool ScipSolver::autoupdate() const
+{
+  return true;
+}
+
 void ScipSolver::set_reoptimizing(bool value)
 {
   SCIP_CALL_EXC(SCIPenableReoptimization(p_env, value));

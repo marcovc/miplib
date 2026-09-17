@@ -89,7 +89,11 @@ struct GurobiSolver : detail::ISolver
   double get_epsilon() const;
 
   void set_pending_update() const;
-  void update_if_pending() const;
+  void update_if_pending(bool force = true) const;
+
+  // When disabled, update_if_pending() only flushes if called with force=true.
+  void set_autoupdate(bool enabled) const;
+  bool autoupdate() const;
 
   bool supports_quadratic_constraints() const
   {
@@ -129,6 +133,7 @@ struct GurobiSolver : detail::ISolver
   GRBEnv env;
   mutable GRBModel model;
   mutable bool pending_update;
+  mutable bool m_autoupdate;
   mutable bool model_has_changed_since_last_solve;
   std::unique_ptr<detail::GurobiCurrentStateHandle> p_callback;
 };

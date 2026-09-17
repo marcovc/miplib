@@ -116,6 +116,9 @@ struct ScipSolver : detail::ISolver
   void add_warm_start(PartialSolution const& partial_solution);
   void remove_warm_starts();
 
+  void set_autoupdate(bool enabled) const;
+  bool autoupdate() const;
+
   void set_reoptimizing(bool);
   void setup_reoptimization();
 

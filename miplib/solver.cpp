@@ -352,6 +352,16 @@ void Solver::remove_warm_starts()
   p_impl->remove_warm_starts();
 }
 
+void Solver::set_autoupdate(bool enabled)
+{
+  p_impl->set_autoupdate(enabled);
+}
+
+bool Solver::autoupdate() const
+{
+  return p_impl->autoupdate();
+}
+
 void Solver::set_reoptimizing(bool value)
 {
   p_impl->set_reoptimizing(value);
