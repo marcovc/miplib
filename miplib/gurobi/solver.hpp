@@ -25,6 +25,7 @@ struct GurobiCurrentStateHandle : GRBCallback, ICurrentStateHandle
   {
     return m_active;
   }
+  void stop();
   std::optional<double> runtime() const;  // optional since not every callback invocation
                                           // allows to query this property
   std::optional<double> gap() const;      // optional since not every callback invocation
@@ -129,6 +130,8 @@ struct GurobiSolver : detail::ISolver
   static bool is_available();
 
   void compute_iis();
+
+  void stop();
 
   GRBEnv env;
   mutable GRBModel model;

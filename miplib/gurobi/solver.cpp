@@ -641,6 +641,11 @@ void GurobiCurrentStateHandle::add_lazy(Constr const& constr)
     throw std::logic_error("Gurobi supports lazy linear constraints only.");
 }
 
+void GurobiCurrentStateHandle::stop()
+{
+  GRBCallback::abort();
+}
+
 void GurobiCurrentStateHandle::callback()
 {
   m_active = true;
@@ -716,6 +721,12 @@ void GurobiSolver::remove_lazy_constr_handler(LazyConstrHandler const& constr_hd
   if (!p_callback)
     return;
   p_callback->remove_constr_handler(constr_hdlr);
+}
+
+void GurobiSolver::stop()
+{
+  if (p_callback)
+    p_callback->stop();
 }
 
 std::string GurobiSolver::backend_info()

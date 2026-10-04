@@ -12,6 +12,10 @@ struct ICurrentStateHandle
   virtual double value(IVar const& var) const = 0;
   virtual void add_lazy(Constr const& constr) = 0;
   virtual bool is_active() const = 0;
+  virtual void stop() const
+  {
+    throw std::logic_error("Stop not implemented.");
+  }
 };
 }  // namespace detail
 

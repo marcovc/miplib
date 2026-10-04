@@ -377,6 +377,11 @@ void Solver::compute_iis()
   p_impl->compute_iis();
 }
 
+void Solver::stop()
+{
+  p_impl->stop();
+}
+
 std::map<Solver::Backend, std::string> Solver::backend_info()
 {
   std::map<Backend, std::string> r;

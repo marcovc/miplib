@@ -127,6 +127,7 @@ struct Solver
   static std::map<Backend, std::string> backend_info();
 
   void compute_iis();
+  void stop();
 
   private:
   std::shared_ptr<detail::ISolver> p_impl;
@@ -228,6 +229,11 @@ struct ISolver
     Solver::IndicatorConstraintPolicy::ReformulateIfUnsupported;
 
   virtual void compute_iis();
+
+  virtual void stop()
+  {
+    throw std::logic_error("Stop not implemented.");
+  }
 };
 
 }  // namespace detail
